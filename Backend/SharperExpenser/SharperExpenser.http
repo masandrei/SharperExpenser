@@ -1,0 +1,30 @@
+
+GET http://localhost:5266/user
+Content-Type: application/json
+
+{
+    "Id":5
+}
+###
+POST http://localhost:5266/user/register/
+Content-Type: application/json
+
+{
+    "Email":"kent132@gmail.com",
+    "Password":"XD1234",
+    "Main_Currency":"RUB"
+}
+
+###
+POST http://localhost:5266/user/login
+Content-type: application/json
+
+{
+    "Email":"kent92@gmail.com",
+    "Password":"XD1234"
+}
+
+###
+GET http://localhost:5266/transaction
+
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyMDAzIiwibmJmIjoxNzIxMDUwOTQ0LCJleHAiOjE3MjEwNTE4NDQsImlhdCI6MTcyMTA1MDk0NH0.hlFf0cvOlQ2Xp9ka6XrCKJrPh-gxtSytIrO-u_dJIFg

@@ -1,0 +1,15 @@
+.flex-container
+{
+    display:flex;
+    height:100vh;
+    flex-direction: row;
+    column-gap: 1%;
+}
+
+.column
+{
+    display: flex;
+    flex-grow: 1;
+    row-gap: 1%;
+    flex-direction: column;
+}
