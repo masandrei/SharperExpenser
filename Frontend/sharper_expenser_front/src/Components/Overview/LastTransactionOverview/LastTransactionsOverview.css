@@ -37,11 +37,6 @@ span
     color: #FFF;
 }
 
-.transaction-list-element label
-{
-    visibility: hidden;
-}
-
 .transaction-list-element .transaction-money-content
 {
     display:flex;

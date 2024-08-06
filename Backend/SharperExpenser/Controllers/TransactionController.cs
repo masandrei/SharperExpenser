@@ -22,18 +22,17 @@ public class TransactionController : ControllerBase
         _transactionService = transactionService;
     }
     [HttpGet]
-    public IActionResult GetTransactionPage([FromQuery] FilterRequest filter, [FromHeader] GetTransactionPageRequest pageRequest)
+    public IActionResult GetTransactionPage([FromQuery] FilterRequest filter, [FromQuery] GetTransactionPageRequest pageRequest)
     {
         int UserId = _authService.ValidateToken(HttpContext.Request.Headers["Authorization"].ToString());
         if(UserId == -1)
         {
             return Unauthorized();
         }
-        
         var transactions = _transactionService.GetUserTransactions(UserId, filter)
             .OrderByDescending(transaction => transaction.TransactionDate)
             .ThenBy(transaction => transaction.Id)
-            .Where(transaction => (transaction.TransactionDate < pageRequest.pageCursorDate || transaction.TransactionDate == pageRequest.pageCursorDate && transaction.Id > pageRequest.pageCursorId))
+            .Where(transaction => transaction.TransactionDate < pageRequest.pageCursorDate || (transaction.TransactionDate == pageRequest.pageCursorDate && transaction.Id > pageRequest.pageCursorId))
             .Take(pageRequest.pageSize)
             .GroupBy(transaction => transaction.TransactionDate.Date)
             .ToList();
@@ -90,7 +89,7 @@ public class TransactionController : ControllerBase
         return Ok(transaction);
     }
     [HttpPost]
-    public IActionResult CreateTransaction(CreateTransactionRequest request)
+    public IActionResult CreateTransaction([FromBody]CreateTransactionRequest request)
     {
         int UserId = _authService.ValidateToken(HttpContext.Request.Headers["Authorization"].ToString());
         if(UserId == -1)
@@ -114,7 +113,7 @@ public class TransactionController : ControllerBase
     }
 
     [HttpDelete]
-    public IActionResult DeleteTransaction(DeleteTransactionRequest request)
+    public IActionResult DeleteTransaction([FromBody]DeleteTransactionRequest request)
     {
         int UserId = _authService.ValidateToken(HttpContext.Request.Headers["Authorization"].ToString());
         if(UserId == -1)
@@ -126,7 +125,7 @@ public class TransactionController : ControllerBase
     }
 
     [HttpPut]
-    public IActionResult UpsertTransaction(UpsertTransactionRequest request)
+    public IActionResult UpsertTransaction([FromBody]UpsertTransactionRequest request)
     {
         int UserId = _authService.ValidateToken(HttpContext.Request.Headers["Authorization"].ToString());
         if(UserId == -1)
@@ -136,12 +135,13 @@ public class TransactionController : ControllerBase
         Transaction temp = new Transaction
         {
             UserId = UserId,
-            Id = request.TransactionId,
-            Amount = request.TransactionAmount,
-            Currency = request.TransactionCurrency,
-            Category = request.TransactionCategory,
-            TransactionDate = request.TransactionDate
+            Id = request.id,
+            Amount = request.amount,
+            Currency = request.currency,
+            Category = request.category,
+            TransactionDate = request.transactionDate
         };
+        Console.WriteLine(temp.Id);
         _transactionService.UpdateTransaction(temp);
         return Ok();
     }

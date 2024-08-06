@@ -10,3 +10,81 @@
     justify-content: flex-end;
     padding: 20px;
 }
+  
+  .centered-flex-container {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    justify-content: center;
+  }
+  
+  .chart-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .expense-label {
+    color: rgb(200, 0, 0);
+    position: absolute;
+  }
+  
+  .income-label {
+    color: rgb(0, 200, 0);
+    position: absolute;
+  }
+  
+  .currency-selector {
+    display: flex;
+    flex-direction: column;
+    min-width: 25%;
+  }
+  
+  
+  .data-row {
+    display: flex;
+    flex-direction: row;
+  }
+  .data-box{
+    margin-top:auto;
+  }
+  
+  .bold-text {
+    font: bold 20px sans-serif;
+    color: rgb(255, 255, 255);
+  }
+  
+  .expense-value {
+    margin-left: auto;
+    color: rgb(200, 0, 0);
+    font: 20px sans-serif;
+  }
+  
+  .income-value {
+    margin-left: auto;
+    color: rgb(0, 200, 0);
+    font: 20px sans-serif;
+  }
+  
+  .total-row {
+    display: flex;
+    flex-direction: row;
+  }
+  
+  .total-label {
+    font: bold 30px sans-serif;
+    color: rgb(255, 255, 255);
+  }
+  
+  .total-value {
+    margin-left: auto;
+    align-self: center;
+    color: rgb(255, 255, 255);
+    font: 20px sans-serif;
+  }
+  
+  hr {
+    height: 5px;
+    background-color: #FFFFFF;
+  }
+  

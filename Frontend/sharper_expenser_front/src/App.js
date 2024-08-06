@@ -1,10 +1,10 @@
-import './App.css';
-import Overview from './Components/Overview/Overview.js';
+import "./App.css";
+import Overview from "./Components/Overview/Overview.js";
 
 function App() {
   return (
     <div className="App">
-      <Overview/>
+      <Overview />
     </div>
   );
 }

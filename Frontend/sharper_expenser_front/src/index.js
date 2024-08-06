@@ -1,14 +1,13 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import store from './storage/ReduxStorage.js';
-import {Provider} from 'react-redux';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import { PopupProvider } from "./storage/ContextStorage";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <Provider store={store}>
-      <App/>
-    </Provider>
+    <PopupProvider>
+      <App />
+    </PopupProvider>
   </React.StrictMode>
 );
