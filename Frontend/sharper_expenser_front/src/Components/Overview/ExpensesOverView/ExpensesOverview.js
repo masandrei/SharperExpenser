@@ -56,19 +56,17 @@ function ExpensesOverview() {
     Object.defineProperty(expensesThisMonth, "total", { enumerable: false });
     return formatToDataObject(expensesThisMonth);
   }, [expensesThisMonth, chosenCurrency]);
-  const incomeData = useMemo(
-    () => {
-      Object.defineProperty(incomeThisMonth, "total", { enumerable: false });
-      return formatToDataObject(incomeThisMonth);},
-    [incomeThisMonth, chosenCurrency]
-  );
+  const incomeData = useMemo(() => {
+    Object.defineProperty(incomeThisMonth, "total", { enumerable: false });
+    return formatToDataObject(incomeThisMonth);
+  }, [incomeThisMonth, chosenCurrency]);
 
   useEffect(() => {
     axios
       .get("http://localhost:5266/transaction/currencies", {
         headers: {
           Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzIyMzYxNDk2LCJleHAiOjE3MjM2NTc0OTYsImlhdCI6MTcyMjM2MTQ5Nn0.9Ak8d2bRtWvtopBmKTISSqP8RBgfsdv2ER5gHbtV6pk",
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI1MDI1Nzc0LCJleHAiOjE3MjYzMjE3NzQsImlhdCI6MTcyNTAyNTc3NH0.pq-RozU4vPZcXX0MnIp-8LkEGoOzh9Dl30wYjRsWcPY",
         },
       })
       .then((response) => {
@@ -85,7 +83,7 @@ function ExpensesOverview() {
         {
           headers: {
             Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzIyMzYxNDk2LCJleHAiOjE3MjM2NTc0OTYsImlhdCI6MTcyMjM2MTQ5Nn0.9Ak8d2bRtWvtopBmKTISSqP8RBgfsdv2ER5gHbtV6pk",
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI1MDI1Nzc0LCJleHAiOjE3MjYzMjE3NzQsImlhdCI6MTcyNTAyNTc3NH0.pq-RozU4vPZcXX0MnIp-8LkEGoOzh9Dl30wYjRsWcPY",
           },
         }
       )
@@ -107,35 +105,23 @@ function ExpensesOverview() {
 
   return (
     <div className="expense-overview">
-      <div
-        className="centered-flex-container"
-      >
+      <div className="centered-flex-container">
         {expensesThisMonth?.total < 0 && (
-          <div
-            className="chart-container"
-          >
+          <div className="chart-container">
             <Doughnut id="expense-chart" data={expenseData} options={{}} />
-            <label className="expense-label">
-              Expenses
-            </label>
+            <label className="expense-label">Expenses</label>
           </div>
         )}
 
         {incomeThisMonth?.total > 0 && (
-          <div
-            className="chart-container"
-          >
+          <div className="chart-container">
             <Doughnut id="income-chart" data={incomeData} options={{}} />
-            <label className="income-label">
-              Incomes
-            </label>
+            <label className="income-label">Incomes</label>
           </div>
         )}
       </div>
 
-      <div
-        className="currency-selector"
-      >
+      <div className="currency-selector">
         <select
           id="select-currency"
           onChange={(e) => {
@@ -153,41 +139,21 @@ function ExpensesOverview() {
         </select>
         <div className="data-box">
           <div className="data-row">
-            <div
-              className="bold-text"
-            >
-              Expenses:
-            </div>
-            <div
-              className="expense-value"
-            >
+            <div className="bold-text">Expenses:</div>
+            <div className="expense-value">
               {expensesThisMonth.total || "-"}
             </div>
           </div>
           <hr />
           <div className="data-row">
-            <div
-              className="bold-text"
-            >
-              Income:
-            </div>
-            <div
-              className="income-value"
-            >
-              {incomeThisMonth.total || "-"}
-            </div>
+            <div className="bold-text">Income:</div>
+            <div className="income-value">{incomeThisMonth.total || "-"}</div>
           </div>
-          <hr/>
+          <hr />
           <div className="total-row">
-            <div
-              className="total-label"
-            >
-              Total:
-            </div>
-            <div
-              className="total-value"
-            >
-              {incomeThisMonth.total || 0 + expensesThisMonth.total || 0}{" "}
+            <div className="total-label">Total:</div>
+            <div className="total-value">
+              {(incomeThisMonth.total || 0) + (expensesThisMonth.total || 0)}{" "}
               {chosenCurrency || ""}
             </div>
           </div>

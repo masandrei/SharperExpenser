@@ -141,7 +141,6 @@ public class TransactionController : ControllerBase
             Category = request.category,
             TransactionDate = request.transactionDate
         };
-        Console.WriteLine(temp.Id);
         _transactionService.UpdateTransaction(temp);
         return Ok();
     }

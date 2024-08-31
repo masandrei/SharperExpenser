@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddControllers();
     AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-    builder.Services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQL")));
+    builder.Services.AddDbContext<ApplicationContext>(options => options.UseNpgsql("Host=localhost;Port=5432;Database=SharperExpenserDb;Username=postgres;Password=TankiTop4ik;"));
     builder.Services.AddScoped<IUsersService,UserService>();
     builder.Services.AddScoped<ITransactionService,TransactionService>();
     builder.Services.AddMvc(opt =>
@@ -40,7 +40,7 @@ var builder = WebApplication.CreateBuilder(args);
         options.AddPolicy("AllowReactApp",
             builder =>
             {
-                builder.WithOrigins("http://localhost:3000") // Update with your React app's URL
+                builder.WithOrigins("http://localhost:3000")
                 .AllowAnyHeader()
                .AllowAnyMethod();
             });

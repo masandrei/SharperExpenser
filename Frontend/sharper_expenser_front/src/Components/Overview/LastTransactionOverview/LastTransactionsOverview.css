@@ -35,6 +35,7 @@ span
     justify-content: center;
     font-family: sans-serif;
     color: #FFF;
+    flex-grow: 1;
 }
 
 .transaction-list-element .transaction-money-content
@@ -42,4 +43,11 @@ span
     display:flex;
     flex-direction:column;
     align-items:flex-end;
+}
+
+#transactions-top-menu
+{
+    display:flex;
+    flex-direction: row;
+    flex-grow: 1;
 }

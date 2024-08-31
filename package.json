@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "react-minimal-pie-chart": "^8.4.0"
+    "react-minimal-pie-chart": "^8.4.0",
+    "react-router-dom": "^6.26.1"
   }
 }

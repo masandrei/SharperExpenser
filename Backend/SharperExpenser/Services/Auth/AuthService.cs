@@ -35,7 +35,6 @@ public class AuthService : IAuthService
     public int ValidateToken(string token)
     {
         token = token.Replace("Bearer ", "");
-        Console.WriteLine(token);
         var tokenHandler = new JwtSecurityTokenHandler();
 
         var jwtToken = tokenHandler.ReadJwtToken(token);

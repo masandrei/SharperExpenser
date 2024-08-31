@@ -21,16 +21,19 @@ function LastTransactionsOverview() {
     const [type, dateGroupLocation, transactionGroupLocation] =
       e.target.id.split("-");
     
-    setChosenItem(
-      lastTransactions[dateGroupLocation][transactionGroupLocation]
-    );
+    if(dateGroupLocation && transactionGroupLocation){
+      setChosenItem(
+        lastTransactions[dateGroupLocation][transactionGroupLocation]
+      );
+    }
+    
   }, [lastTransactions]);
   useEffect(() => {
     axios
       .get("http://localhost:5266/transaction", {
         headers: {
           Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzIyMTcwMzg3LCJleHAiOjE3MjM0NjYzODcsImlhdCI6MTcyMjE3MDM4N30.W9ug3YZJzfAnv7dKRUG7mQ1zhpsaIosT31scL7IghLU"
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI1MDI1Nzc0LCJleHAiOjE3MjYzMjE3NzQsImlhdCI6MTcyNTAyNTc3NH0.pq-RozU4vPZcXX0MnIp-8LkEGoOzh9Dl30wYjRsWcPY"
         },
         params:{
           pageCursorDate: new Date().toISOString(),
@@ -47,7 +50,10 @@ function LastTransactionsOverview() {
 
   return (
     <div className="transactions-overview">
-      <span>Last Transactions</span>
+      <div id="transactions-top-menu">
+        <span>Last Transactions</span>
+        <label onClick={openPopup}>Add</label>
+      </div>
       <div id="transactionList">
         {lastTransactions.map((dateGroup, dateIndex) => (
           <div>

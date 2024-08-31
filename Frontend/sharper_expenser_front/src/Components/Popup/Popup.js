@@ -24,11 +24,12 @@ function Popup() {
   }, [chosenItem]);
 
   function submitData() {
+    console.log(formData);
     axios
       .put("http://localhost:5266/transaction", formData, {
         headers: {
           Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzIyMzYxNDk2LCJleHAiOjE3MjM2NTc0OTYsImlhdCI6MTcyMjM2MTQ5Nn0.9Ak8d2bRtWvtopBmKTISSqP8RBgfsdv2ER5gHbtV6pk",
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI1MDI1Nzc0LCJleHAiOjE3MjYzMjE3NzQsImlhdCI6MTcyNTAyNTc3NH0.pq-RozU4vPZcXX0MnIp-8LkEGoOzh9Dl30wYjRsWcPY",
           accept: "*/*",
           "Content-Type": "application/json",
         },
