@@ -5,6 +5,6 @@ namespace SharperExpenser.Services.Auth;
 public interface IAuthService
 {
     string GenerateToken(User user);
-    int ValidateToken(string token);
+    string ValidateToken(string token);
     User? AuthenticateUser(string Password, User Expected);
 }

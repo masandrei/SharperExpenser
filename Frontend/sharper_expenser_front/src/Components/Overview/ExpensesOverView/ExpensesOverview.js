@@ -62,12 +62,16 @@ function ExpensesOverview() {
   }, [incomeThisMonth, chosenCurrency]);
 
   useEffect(() => {
+    const currentDate = new Date();
     axios
       .get("http://localhost:5266/transaction/currencies", {
         headers: {
           Authorization:
             "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI1MDI1Nzc0LCJleHAiOjE3MjYzMjE3NzQsImlhdCI6MTcyNTAyNTc3NH0.pq-RozU4vPZcXX0MnIp-8LkEGoOzh9Dl30wYjRsWcPY",
         },
+        params: {
+          DateFrom: `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-01`
+        }
       })
       .then((response) => {
         setCurrencies(response.data);
@@ -79,7 +83,7 @@ function ExpensesOverview() {
     const currentDate = new Date();
     axios
       .get(
-        `http://localhost:5266/transaction/report?Currency=${chosenCurrency}&DateFrom=${currentDate.getFullYear()}-${currentDate.getMonth()}-01`,
+        `http://localhost:5266/transaction/report?Currency=${chosenCurrency}&DateFrom=${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-01`,
         {
           headers: {
             Authorization:

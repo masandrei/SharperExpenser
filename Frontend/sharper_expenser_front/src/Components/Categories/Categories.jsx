@@ -1,10 +1,8 @@
 import React from "react";
 
-function Categories()
+export default function Categories()
 {
     return (<div>
 
     </div>);
 }
-
-export default Categories;

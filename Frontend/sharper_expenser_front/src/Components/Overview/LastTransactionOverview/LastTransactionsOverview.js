@@ -43,7 +43,7 @@ function LastTransactionsOverview() {
       })
       .then((response) => {
         const page = response.data.transactionPage;
-        setLastTransactions(page.map(dateGroup => dateGroup.reverse()).reverse());
+        setLastTransactions(page);
       })
       .catch((err) => console.log(err));
   }, []);

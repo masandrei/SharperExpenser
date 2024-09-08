@@ -46,16 +46,17 @@ public class TransactionService : ITransactionService
     }
     public IQueryable<Transaction> GetUserTransactions(int userId, FilterRequest filter)
     {
+        Console.WriteLine(filter.Currency);
         var temp = _transactionContext.TransactionRecords.Where(x => x.UserId == userId);
         if (filter.Category != null)
         {
-            var categorySet = filter.Category.ToHashSet();
+            var categorySet = filter.Category.Split(",").ToHashSet();
             temp = temp.Where(x => categorySet.Contains(x.Category));
         }
 
         if (filter.Currency != null)
         {
-            var currencySet = filter.Currency.ToHashSet();
+            var currencySet = filter.Currency.Split(",").ToHashSet();
             temp = temp.Where(x => currencySet.Contains(x.Currency));
         }
 

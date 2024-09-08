@@ -2,7 +2,7 @@
 
 public class GetTransactionPageResponse
 {
-    public List<IGrouping<DateTime, Models.Transaction>> transactionPage { get; set; } = null!;
+    public List<List<Models.Transaction>> transactionPage { get; set; } = null!;
     public int nextPageCursorId { get; set; }
     public DateTime nextPageCursorDate { get; set; }
 }

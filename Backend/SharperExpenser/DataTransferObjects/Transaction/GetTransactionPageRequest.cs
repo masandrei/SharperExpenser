@@ -4,8 +4,9 @@ namespace SharperExpenser.DataTransferObjects.Transaction;
 
 public class GetTransactionPageRequest
 {
+    public int UserId { get; set; }
     [Range(1, 100, ErrorMessage = "Page size can't be more than 100 and less than 1")]
-    public int pageSize { get; set; } = 20;
+    public int pageSize { get; set; } = 10;
 
     [Range(0, int.MaxValue)] 
     public int pageCursorId { get; set; } = 0;

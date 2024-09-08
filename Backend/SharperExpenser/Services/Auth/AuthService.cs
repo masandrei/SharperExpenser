@@ -32,18 +32,16 @@ public class AuthService : IAuthService
         return handler.WriteToken(token);
     }
 
-    public int ValidateToken(string token)
+    public string ValidateToken(string token)
     {
         token = token.Replace("Bearer ", "");
         var tokenHandler = new JwtSecurityTokenHandler();
 
         var jwtToken = tokenHandler.ReadJwtToken(token);
         var claims = jwtToken.Claims;
-        if(Int32.TryParse(claims.FirstOrDefault(claim => claim.Type == "userId")?.Value, out int UserId))
-        {
-            return UserId;
-        }
-        return -1;
+        var UserIdString = claims.FirstOrDefault(claim => claim.Type == "userId")?.Value;
+
+        return UserIdString ?? String.Empty;
     }
 
     public User? AuthenticateUser(string Password, User user)

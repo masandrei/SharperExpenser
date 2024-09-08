@@ -5,9 +5,11 @@ using SharperExpenser.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using SharperExpenser.DataTransferObjects.User;
+using SharperExpenser.Helpers;
 
 namespace SharperExpenser.Controllers;
 [ApiController]
+[CheckTokenClaimsFilter]
 [Route("/user")]
 public class UserController : ControllerBase
 {
@@ -21,13 +23,8 @@ public class UserController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public IActionResult GetUserInfo()
+    public IActionResult GetUserInfo([FromQuery] int UserId)
     {
-        int UserId = _authService.ValidateToken(HttpContext.Request.Headers["Authorization"].ToString());
-        if(UserId == -1)
-        {
-            return BadRequest();
-        }
         var user = _userService.GetUser(UserId);
         if(user == null)
         {
