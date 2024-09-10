@@ -10,4 +10,5 @@ public class ApplicationContext : DbContext
 
     public DbSet<User> UserRecords { get; set;} = null!;
     public DbSet<Transaction> TransactionRecords { get; set; } = null!;
+    public DbSet<Goal> GoalRecords { get; set; } = null!;
 }

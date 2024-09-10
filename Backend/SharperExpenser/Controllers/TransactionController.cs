@@ -24,7 +24,6 @@ public class TransactionController : ControllerBase
     [HttpGet]
     public IActionResult GetTransactionPage([FromQuery] FilterRequest filter, [FromQuery] GetTransactionPageRequest pageRequest)
     {
-        Console.WriteLine(HttpContext.Request.QueryString);
         var transactions = _transactionService.GetUserTransactions(pageRequest.UserId, filter)
         .Where(transaction => transaction.TransactionDate < pageRequest.pageCursorDate ||
           (transaction.TransactionDate == pageRequest.pageCursorDate && transaction.Id > pageRequest.pageCursorId))
