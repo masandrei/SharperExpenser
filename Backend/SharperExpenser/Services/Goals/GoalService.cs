@@ -10,12 +10,12 @@ public class GoalService : IGoalService
     {
         _goalContext = applicationContext; 
     }
-    public void CreateGoal(CreateGoalRequest request, int UserId)
+    public Goal? CreateGoal(CreateGoalRequest request, int UserId)
     {
         List<Goal> LastByPriority = GetAllGoals(UserId).OrderByDescending(goal => goal.Priority).ToList();
         if(LastByPriority.Count == 5)
         {
-            return;
+            return null;
         }
         Goal NewGoal = new Goal
         {
@@ -31,6 +31,7 @@ public class GoalService : IGoalService
         };
         _goalContext.GoalRecords.Add(NewGoal);
         _goalContext.SaveChangesAsync();
+        return NewGoal;
     }
 
     public void DeleteGoal(int UserId, int Id)
@@ -62,6 +63,19 @@ public class GoalService : IGoalService
     {
         return _goalContext.GoalRecords.FirstOrDefault(goal => goal.UserId == UserId && goal.Id == id);
     }
+
+    public void Update(Transaction? oldTransaction, Transaction? newTransaction)
+    {
+        Goal? temp = GetAllGoals((oldTransaction?.UserId ?? newTransaction?.UserId) ?? -1).FirstOrDefault();
+        if(temp == null 
+            || (oldTransaction?.TransactionDate < temp.MoneyStartingPeriod && newTransaction?.TransactionDate < temp.MoneyStartingPeriod)
+            || (oldTransaction is null && newTransaction?.TransactionDate < temp.MoneyStartingPeriod)
+            || (newTransaction is null && oldTransaction?.TransactionDate < temp.MoneyStartingPeriod))
+        {
+            return;
+        }
+    }
+
     public void UpdateGoal(UpdateGoalRequest request, int UserId)
     {
         Goal? temp = null;
@@ -74,6 +88,34 @@ public class GoalService : IGoalService
                 return;
             }
             temp = UserGoals[tempIndex];
+            int highestPriority = UserGoals[^1].Priority;
+            int lowestPriority = UserGoals[0].Priority;
+            if(request.UpdatePriority > highestPriority)
+            {
+                temp.Priority = highestPriority + 1;
+            }
+            else if(request.UpdatePriority < lowestPriority)
+            {
+                temp.Priority = lowestPriority - 1;
+                temp.AmountAtTheStartOfMonth = UserGoals[0].AmountAtTheStartOfMonth;
+                temp.AdditionalAmount = UserGoals[0].AdditionalAmount;
+                temp.MoneyStartingPeriod = UserGoals[0].MoneyStartingPeriod;
+            }
+            else
+            {
+                while(tempIndex + 1 < UserGoals.Count && request.UpdatePriority > UserGoals[tempIndex + 1].Priority)
+                {
+                    (UserGoals[tempIndex].Priority, UserGoals[tempIndex + 1].Priority) = 
+                        (UserGoals[tempIndex + 1].Priority, UserGoals[tempIndex].Priority);
+                    tempIndex++;
+                }
+                while (tempIndex - 1 >= 0 && UserGoals[tempIndex].Priority < UserGoals[tempIndex - 1].Priority)
+                {
+                    (UserGoals[tempIndex].Priority, UserGoals[tempIndex - 1].Priority) = 
+                        (UserGoals[tempIndex - 1].Priority, UserGoals[tempIndex].Priority);
+                    tempIndex--;
+                }
+            }
         }
         else
         {

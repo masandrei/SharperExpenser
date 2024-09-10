@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using SharperExpenser.DataBaseContexts;
 using SharperExpenser.Helpers;
 using SharperExpenser.Services.Auth;
+using SharperExpenser.Services.Goals;
 using SharperExpenser.Services.Transactions;
 using SharperExpenser.Services.Users;
 
@@ -17,8 +18,10 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddDbContext<ApplicationContext>(options => options.UseNpgsql("Host=localhost;Port=5432;Database=SharperExpenserDb;Username=postgres;Password=TankiTop4ik;"));
     builder.Services.AddScoped<IUsersService,UserService>();
     builder.Services.AddScoped<ITransactionService,TransactionService>();
+    builder.Services.AddScoped<IGoalService, GoalService>();
     builder.Services.AddMvc(opt =>
     {
+        opt.Filters.Add<CheckTokenClaimsFilter>();
         opt.Filters.Add<ValidationFilter>();
     });
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

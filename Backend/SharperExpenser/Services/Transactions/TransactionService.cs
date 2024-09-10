@@ -1,20 +1,37 @@
+using k8s.KubeConfigModels;
 using SharperExpenser.DataBaseContexts;
 using SharperExpenser.DataTransferObjects;
+using SharperExpenser.DataTransferObjects.Transaction;
 using SharperExpenser.Models;
+using SharperExpenser.Services.Goals;
+using SharperExpenser.Services.Interfaces;
 
 namespace SharperExpenser.Services.Transactions;
 
-public class TransactionService : ITransactionService
+public class TransactionService : ITransactionService, ISubject
 {
+    private readonly List<IObserver> observers;
     private readonly ApplicationContext _transactionContext;
-    public TransactionService(ApplicationContext transactionContext)
+    public TransactionService(ApplicationContext transactionContext, IGoalService goalService)
     {
         _transactionContext = transactionContext;
+        observers = new List<IObserver>();
+        Attach(goalService);
     }
-    public void CreateTransaction(Transaction transaction)
+    public Transaction CreateTransaction(CreateTransactionRequest request, int UserId)
     {
-        _transactionContext.TransactionRecords.Add(transaction);
-        _transactionContext.SaveChangesAsync();
+        Transaction temp = new Transaction
+        {
+            UserId = UserId,
+            Amount = request.TransactionAmount,
+            Category = request.TransactionCategory,
+            Currency = request.TransactionCurrency,
+            TransactionDate = request.TransactionDate
+        };
+        _transactionContext.TransactionRecords.Add(temp);
+        _transactionContext.SaveChanges();
+        Notify(null, temp);
+        return temp;
     }
 
     public void DeleteTransaction(int id, int userId)
@@ -23,20 +40,31 @@ public class TransactionService : ITransactionService
         if (transaction != null)
         {
             _transactionContext.TransactionRecords.Remove(transaction);
-            _transactionContext.SaveChangesAsync();
+            _transactionContext.SaveChanges();
+            Notify(transaction, null);
         }
     }
 
-    public void UpdateTransaction(Transaction transaction)
+    public Transaction UpdateTransaction(UpsertTransactionRequest request, int UserId)
     {
-        Transaction? temp = _transactionContext.TransactionRecords.Find(transaction.Id);
+        Transaction? temp = _transactionContext.TransactionRecords.FirstOrDefault(transaction => transaction.UserId == UserId && request.Id == transaction.Id);
         if(temp == null)
         {
-            CreateTransaction(transaction);
-            return;
+            return null;
         }
-        _transactionContext.Entry(temp).CurrentValues.SetValues(transaction);
+        Transaction newTransaction = new Transaction
+        {
+            Id = temp.Id,
+            UserId = UserId,
+            TransactionDate = request.TransactionDate ?? temp.TransactionDate,
+            Amount = request.Amount ?? temp.Amount,
+            Category = request.Category ?? temp.Category,
+            Currency = temp.Currency,
+        };
+        _transactionContext.Entry(temp).CurrentValues.SetValues(newTransaction);
         _transactionContext.SaveChanges();
+        Notify(temp, newTransaction);
+        return newTransaction;
     }
 
     public Transaction? GetTransaction(int id, int userId)
@@ -105,5 +133,23 @@ public class TransactionService : ITransactionService
             { "incomes", incomesByCategory }
         };
         return result;
+    }
+
+    public void Attach(IObserver observer)
+    {
+        observers.Add(observer);
+    }
+
+    public void Detach(IObserver observer)
+    {
+        observers.Remove(observer);
+    }
+
+    public void Notify(Transaction? oldTransaction, Transaction? newTransaction)
+    {
+        foreach(var observer in observers)
+        {
+            observer.Update(oldTransaction, newTransaction);
+        }
     }
 }

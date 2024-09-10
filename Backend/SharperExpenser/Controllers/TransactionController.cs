@@ -5,12 +5,10 @@ using SharperExpenser.Services.Transactions;
 using Microsoft.AspNetCore.Authorization;
 using SharperExpenser.DataTransferObjects;
 using SharperExpenser.DataTransferObjects.Transaction;
-using SharperExpenser.Helpers;
 
 namespace SharperExpenser.Controllers;
 
 [Authorize]
-[CheckTokenClaimsFilter]
 [ApiController]
 [Route("/transaction")]
 public class TransactionController : ControllerBase
@@ -79,19 +77,10 @@ public class TransactionController : ControllerBase
     [HttpPost]
     public IActionResult CreateTransaction([FromBody]CreateTransactionRequest request, [FromQuery] int UserId)
     {
-        Transaction temp = new Transaction
-        {
-            UserId = UserId,
-            Amount = request.TransactionAmount,
-            Category = request.TransactionCategory,
-            Currency = request.TransactionCurrency,
-            TransactionDate = request.TransactionDate
-        };
-        _transactionService.CreateTransaction(temp);
+        Transaction temp = _transactionService.CreateTransaction(request, UserId);
         return CreatedAtAction(
-            actionName : nameof(CreateTransaction),
-            routeValues: new {Id = temp.Id},
-            value : temp
+            nameof(CreateTransaction),
+            temp
         );
     }
 
@@ -105,16 +94,12 @@ public class TransactionController : ControllerBase
     [HttpPut]
     public IActionResult UpsertTransaction([FromBody]UpsertTransactionRequest request, [FromQuery] int UserId)
     {
-        Transaction temp = new Transaction
+        
+        Transaction? temp = _transactionService.UpdateTransaction(request, UserId);
+        if(temp == null)
         {
-            UserId = UserId,
-            Id = request.id,
-            Amount = request.amount,
-            Currency = request.currency,
-            Category = request.category,
-            TransactionDate = request.transactionDate
-        };
-        _transactionService.UpdateTransaction(temp);
-        return Ok();
+            return BadRequest("Transaction does not exist");
+        }
+        return Ok(temp);
     }
 }

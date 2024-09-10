@@ -3,13 +3,10 @@ using SharperExpenser.Models;
 using SharperExpenser.Services.Users;
 using SharperExpenser.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using SharperExpenser.DataTransferObjects.User;
-using SharperExpenser.Helpers;
 
 namespace SharperExpenser.Controllers;
 [ApiController]
-[CheckTokenClaimsFilter]
 [Route("/user")]
 public class UserController : ControllerBase
 {
