@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace SharperExpenser.Helpers;
+namespace SharperExpenser.Helpers.Validation;
 
 public class ValidationFilter : IAsyncActionFilter
 {

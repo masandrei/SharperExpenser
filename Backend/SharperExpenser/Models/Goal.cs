@@ -11,4 +11,5 @@ public class Goal
     public decimal AdditionalAmount { get; set; }
     public decimal MoneyToGather { get; set; }
     public string Currency { get; set; } = null!;
+    public bool IsFinished { get; set; }
 }

@@ -7,4 +7,5 @@ public class User
     public string Password_Hash { get; set; } = null!;
     public string saltString { get; set; } = "";
     public string Main_Currency { get; set; } = null!;
+
 }

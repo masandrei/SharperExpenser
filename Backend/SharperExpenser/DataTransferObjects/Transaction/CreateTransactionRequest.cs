@@ -1,9 +1,11 @@
+using SharperExpenser.Helpers.Validation;
 using System.ComponentModel.DataAnnotations;
 
 namespace SharperExpenser.DataTransferObjects.Transaction;
 
 public class CreateTransactionRequest
 {
+    [DateValidation(ErrorMessage = "Date of transaction can't be later than now")]
     public DateTime TransactionDate { get; set; }
     [Range(-99999999.99, 99999999.99, MinimumIsExclusive = true)]
     public decimal TransactionAmount { get; set; }
