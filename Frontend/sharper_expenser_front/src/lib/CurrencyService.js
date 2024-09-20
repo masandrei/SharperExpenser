@@ -21,5 +21,5 @@ class CurrencyService{
             return currencyFromConvertToUsdRate * currencyToConvertFromUsdRate;
         })
         .catch(err => console.error(err));
-    }
+      }
 }
