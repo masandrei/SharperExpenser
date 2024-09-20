@@ -16,6 +16,7 @@ function Popup() {
   const [formData, setFormData] = useState(defaultFormData);
   const { isOpen, setOpen } = useContext(popupContext);
   const { chosenTransaction, setChosenTransaction } = useContext(popupContext);
+  const { currentGoal, setCurrentGoal } = useContext(popupContext);
   useEffect(() => {
     setFormData({
       ...formData,
@@ -24,6 +25,10 @@ function Popup() {
   }, [chosenTransaction]);
 
   function submitData() {
+    let exchangeRate = 1;
+    if(chosenTransaction.currency !== currentGoal.currency){
+      
+    }
     axios
       .put("http://localhost:5266/transaction", formData, {
         headers: {
@@ -33,7 +38,10 @@ function Popup() {
           "Content-Type": "application/json",
         },
       })
-      .then(() => setOpen(false))
+      .then(() => {
+        setOpen(false);
+        setChosenTransaction({});
+      })
       .catch((err) => console.log(err));
   }
 
