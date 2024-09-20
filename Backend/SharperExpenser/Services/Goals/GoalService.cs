@@ -1,32 +1,29 @@
 ﻿using SharperExpenser.DataBaseContexts;
 using SharperExpenser.DataTransferObjects.Goal;
 using SharperExpenser.Models;
-using SharperExpenser.Services.Misc;
 
 namespace SharperExpenser.Services.Goals;
 public class GoalService : IGoalService
 {
     private readonly ApplicationContext _goalContext;
-    private readonly ICurrencyService _currencyService;
-    public GoalService(ApplicationContext applicationContext, ICurrencyService currencyService)
+    public GoalService(ApplicationContext applicationContext)
     {
         _goalContext = applicationContext;
-        _currencyService = currencyService;
     }
     public Goal? CreateGoal(CreateGoalRequest request, int UserId)
     {
-        List<Goal> LastByPriority = GetAllGoals(UserId).Where(goal => !goal.IsFinished).OrderByDescending(goal => goal.Priority).ToList();
-        if(LastByPriority.Count == 5)
+        List<Goal> UserGoals = GetAllGoals(UserId).Where(goal => !goal.IsFinished).OrderByDescending(goal => goal.Priority).ToList();
+        if(UserGoals.Count == 5)
         {
             return null;
         }
+        Goal? LastByPriority = UserGoals.FirstOrDefault();
         Goal NewGoal = new Goal
         {
             UserId = UserId,
             GoalName = request.CreateGoalName,
             MoneyStartingPeriod = DateTime.Now,
-            EndDate = request.CreateEndDate,
-            Priority = (LastByPriority.FirstOrDefault()?.Priority ?? int.MinValue) + 1,
+            Priority = (LastByPriority?.Priority ?? 0) + 1,
             AmountAtTheStartOfMonth = 0M,
             AdditionalAmount = 0M,
             MoneyToGather = request.CreateMoneyToGather,
@@ -34,36 +31,34 @@ public class GoalService : IGoalService
             IsFinished = false
         };
         _goalContext.GoalRecords.Add(NewGoal);
-        _goalContext.SaveChangesAsync();
+        _goalContext.SaveChanges();
         return NewGoal;
     }
 
-    public async void DeleteGoal(int UserId, int Id)
+    public async void DeleteGoal(int UserId, int Id, decimal ExchangeRate)
     {
-        var UserGoals = GetAllGoals(UserId).OrderBy(goal => goal.Priority).ToList();
+        var UserGoals = GetAllGoals(UserId).OrderBy(goal => goal.IsFinished).ThenBy(goal => goal.Priority).ToList();
         if (UserGoals.Count > 0)
         {
-            var temp = UserGoals.FindIndex(goal => goal.Id == Id);
-            if(temp == -1)
+            var GoalIndex = UserGoals.FindIndex(goal => goal.Id == Id);
+            if(GoalIndex == -1)
             {
                 return;
             }
-            if (temp == 0 && !UserGoals[temp].IsFinished && UserGoals.Count > 1)
+            if (GoalIndex == 0 && UserGoals.Count > 1 && !UserGoals[GoalIndex + 1].IsFinished)
             {
                 UserGoals[1].MoneyStartingPeriod = UserGoals[0].MoneyStartingPeriod;
-                decimal exchangeRate = await _currencyService.GetExchangeRate(DateTime.Today, UserGoals[0].Currency, UserGoals[1].Currency);
                 ( UserGoals[1].AmountAtTheStartOfMonth, UserGoals[1].AdditionalAmount) =
-                ( UserGoals[0].AmountAtTheStartOfMonth * exchangeRate, UserGoals[0].AdditionalAmount * exchangeRate);
+                ( UserGoals[0].AmountAtTheStartOfMonth * ExchangeRate, UserGoals[0].AdditionalAmount * ExchangeRate);
             }
-            _goalContext.GoalRecords.Remove(UserGoals[temp]);
-            FinishGoal(UserGoals);
+            _goalContext.GoalRecords.Remove(UserGoals[GoalIndex]);
             await _goalContext.SaveChangesAsync();
         }
     }
 
     public IQueryable<Goal> GetAllGoals(int UserId)
     {
-        return _goalContext.GoalRecords.Where(goal => goal.UserId == UserId).OrderBy(goal => goal.Priority);
+        return _goalContext.GoalRecords.Where(goal => goal.UserId == UserId);
     }
 
     public Goal? GetGoal(int UserId, int id)
@@ -71,7 +66,7 @@ public class GoalService : IGoalService
         return _goalContext.GoalRecords.FirstOrDefault(goal => goal.UserId == UserId && goal.Id == id);
     }
 
-    public async void Update(Transaction? oldTransaction, Transaction? newTransaction)
+    public async void Update(Transaction? oldTransaction, Transaction? newTransaction, decimal newExchangeRate = 1, decimal oldExchangeRate = 1)
     {
         if (oldTransaction == null && newTransaction == null)
         {
@@ -91,15 +86,7 @@ public class GoalService : IGoalService
         if((oldTransaction is null || oldTransaction.TransactionDate < temp.MoneyStartingPeriod ) && newTransaction?.TransactionDate >= temp.MoneyStartingPeriod)
         {
             decimal difference = 0;
-            if(newTransaction.Currency == temp.Currency)
-            {
-                difference = newTransaction.Amount;
-            }
-            else
-            {
-                decimal exchangeRate = await _currencyService.GetExchangeRate(newTransaction.TransactionDate, newTransaction.Currency, temp.Currency);
-                difference = newTransaction.Amount * exchangeRate;
-            }
+            difference = newTransaction.Amount * newExchangeRate;
 
             if(newTransaction.TransactionDate.Year == DateTime.Now.Year && newTransaction.TransactionDate.Month == DateTime.Now.Month)
             {
@@ -113,15 +100,7 @@ public class GoalService : IGoalService
         else if((newTransaction is null || newTransaction.TransactionDate < temp.MoneyStartingPeriod ) && oldTransaction?.TransactionDate >= temp.MoneyStartingPeriod)
         {
             decimal difference = 0;
-            if (oldTransaction.Currency == temp.Currency)
-            {
-                difference = oldTransaction.Amount;
-            }
-            else
-            {
-                decimal exchangeRate = await _currencyService.GetExchangeRate(oldTransaction.TransactionDate, oldTransaction.Currency, temp.Currency);
-                difference = oldTransaction.Amount * exchangeRate;
-            }
+            difference = oldTransaction.Amount * oldExchangeRate;
 
             if (oldTransaction.TransactionDate.Year == DateTime.Now.Year && oldTransaction.TransactionDate.Month == DateTime.Now.Month)
             {
@@ -134,7 +113,7 @@ public class GoalService : IGoalService
         }
         else
         {
-            if (oldTransaction.Equals(newTransaction))
+            if (oldTransaction != null && oldTransaction.Equals(newTransaction))
             {
                 return;
             }
@@ -142,13 +121,11 @@ public class GoalService : IGoalService
             decimal newAmountInGoalCurrency = newTransaction.Amount;
             if (oldTransaction.Currency != temp.Currency)
             {
-                decimal oldExchangeRate = await _currencyService.GetExchangeRate(oldTransaction.TransactionDate, oldTransaction.Currency, temp.Currency);
                 oldAmountInGoalCurrency = oldTransaction.Amount * oldExchangeRate;
             }
 
             if (newTransaction.Currency != temp.Currency)
             {
-                decimal newExchangeRate = await _currencyService.GetExchangeRate(newTransaction.TransactionDate, newTransaction.Currency, temp.Currency);
                 newAmountInGoalCurrency = newTransaction.Amount * newExchangeRate;
             }
 
@@ -162,89 +139,77 @@ public class GoalService : IGoalService
                 temp.AmountAtTheStartOfMonth = Math.Max(0, temp.AmountAtTheStartOfMonth + difference);
             }
         }
-        FinishGoal(UserGoals);
         await _goalContext.SaveChangesAsync();
     }
 
     public void UpdateGoal(UpdateGoalRequest request, int UserId)
     {
         List<Goal> UserGoals = GetAllGoals(UserId).OrderBy(goal => goal.Priority).ToList();
-        int tempIndex = UserGoals.FindIndex(goal => goal.Id == request.Id);
-        if (tempIndex == -1)
+        int GoalIndex = UserGoals.FindIndex(goal => goal.Id == request.Id);
+        if (GoalIndex == -1)
         {
             return;
         }
-        Goal temp = UserGoals[tempIndex];
+        Goal temp = UserGoals[GoalIndex];
+        Console.WriteLine("I'm here, dummy bastard");
         if (request.UpdatePriority != null)
         {
-            
             int highestPriority = UserGoals[^1].Priority;
             int lowestPriority = UserGoals[0].Priority;
             if(request.UpdatePriority > highestPriority)
             {
+                Console.Write("Highest possible");
                 temp.Priority = highestPriority + 1;
             }
             else if(request.UpdatePriority < lowestPriority)
             {
+                Console.WriteLine("Lowest possible");
                 temp.Priority = lowestPriority - 1;
-                temp.AmountAtTheStartOfMonth = UserGoals[0].AmountAtTheStartOfMonth;
-                temp.AdditionalAmount = UserGoals[0].AdditionalAmount;
+                temp.AmountAtTheStartOfMonth = UserGoals[0].AmountAtTheStartOfMonth * (request.ExchangeRate ?? 1);
+                temp.AdditionalAmount = UserGoals[0].AdditionalAmount * (request.ExchangeRate ?? 1);
                 temp.MoneyStartingPeriod = UserGoals[0].MoneyStartingPeriod;
             }
             else
             {
-                while(tempIndex + 1 < UserGoals.Count && request.UpdatePriority > UserGoals[tempIndex + 1].Priority)
+                Console.WriteLine(GoalIndex);
+                while (GoalIndex + 1 < UserGoals.Count && request.UpdatePriority <= request.UpdatePriority)
                 {
-                    (UserGoals[tempIndex].Priority, UserGoals[tempIndex + 1].Priority) = 
-                        (UserGoals[tempIndex + 1].Priority, UserGoals[tempIndex].Priority);
-                    tempIndex++;
+                    (UserGoals[GoalIndex].Priority, UserGoals[GoalIndex + 1].Priority) = 
+                        (UserGoals[GoalIndex + 1].Priority, UserGoals[GoalIndex].Priority);
+                    GoalIndex++;
                 }
-                while (tempIndex - 1 >= 0 && UserGoals[tempIndex].Priority < UserGoals[tempIndex - 1].Priority)
+                while (GoalIndex - 1 >= 0 && UserGoals[GoalIndex].Priority >= request.UpdatePriority)
                 {
-                    (UserGoals[tempIndex].Priority, UserGoals[tempIndex - 1].Priority) = 
-                        (UserGoals[tempIndex - 1].Priority, UserGoals[tempIndex].Priority);
-                    tempIndex--;
+                    (UserGoals[GoalIndex].Priority, UserGoals[GoalIndex - 1].Priority) = 
+                        (UserGoals[GoalIndex - 1].Priority, UserGoals[GoalIndex].Priority);
+                    GoalIndex--;
                 }
+                Console.WriteLine(GoalIndex);
             }
         }
+        Console.WriteLine($"Updated Priority {UserGoals[GoalIndex].Priority}");
         temp.GoalName = request.UpdateGoalName ?? temp.GoalName;
-        temp.EndDate = request.UpdateEndDate ?? temp.EndDate;
         temp.MoneyToGather = request.UpdateMoneyToGather ?? temp.MoneyToGather;
         temp.Currency = request.UpdateCurrency ?? temp.Currency;
-        FinishGoal(UserGoals);
-        _goalContext.SaveChangesAsync();
+        _goalContext.SaveChanges();
     }
 
-    private async void FinishGoal(List<Goal> UserGoals)
+    public async void FinishGoal(int GoalId, int UserId, decimal ExchangeRate)
     {
-        if(UserGoals.Count == 0)
+        List<Goal> UserGoals = GetAllGoals(UserId).Where(goal => goal.UserId == UserId && !goal.IsFinished).OrderBy(goal => goal.Priority).ToList();
+        Goal? FirstByPriority = UserGoals.FirstOrDefault();
+        decimal sum = UserGoals[0].AmountAtTheStartOfMonth + UserGoals[0].AdditionalAmount;
+        if (FirstByPriority is null || FirstByPriority.Id != GoalId || sum < FirstByPriority.MoneyToGather)
         {
             return;
         }
-        decimal sum = UserGoals[0].AmountAtTheStartOfMonth + UserGoals[0].AdditionalAmount;
-        string currency = UserGoals[0].Currency;
-        int index = 0;
-        for(int i = 0; i <  UserGoals.Count; i++)
+        FirstByPriority.IsFinished = true;
+        FirstByPriority.AdditionalAmount = 0M;
+        FirstByPriority.AmountAtTheStartOfMonth = 0M;
+        if (UserGoals.Count > 1)
         {
-            Goal temp = UserGoals[index];
-            if(temp.Currency != currency)
-            {
-                sum *= await _currencyService.GetExchangeRate(DateTime.Today, currency, temp.Currency);
-                currency = temp.Currency;
-                if(sum < temp.MoneyToGather)
-                {
-                    break;
-                }
-            }
-            temp.AmountAtTheStartOfMonth = temp.MoneyToGather;
-            temp.AdditionalAmount = 0;
-            sum -= temp.MoneyToGather;
-            temp.IsFinished = true;
-            index++;
+            UserGoals[1].AdditionalAmount = (sum - FirstByPriority.MoneyToGather) * ExchangeRate;
         }
-        if(index != 0 && index < UserGoals.Count)
-        {
-            UserGoals[index].AdditionalAmount = sum;
-        }
+        await _goalContext.SaveChangesAsync();
     }
 }

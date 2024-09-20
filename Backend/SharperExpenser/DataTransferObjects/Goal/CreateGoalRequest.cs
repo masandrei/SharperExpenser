@@ -5,7 +5,6 @@ public class CreateGoalRequest
 {
     [Length(1, 50)]
     public string CreateGoalName { get; set; } = null!;
-    public DateTime? CreateEndDate { get; set; }
     [Range(0, 99999999.99, MinimumIsExclusive = true)]
     public decimal CreateMoneyToGather { get; set; }
     [StringLength(3)]

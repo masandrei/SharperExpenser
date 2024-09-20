@@ -8,7 +8,7 @@ namespace SharperExpenser.Services.Transactions;
 public interface ITransactionService
 {
     Transaction CreateTransaction(CreateTransactionRequest request, int UserId);
-    void DeleteTransaction(int Id, int UserId);
+    void DeleteTransaction(DeleteTransactionRequest request, int UserId);
     Transaction UpdateTransaction(UpsertTransactionRequest request, int UserId);
     Transaction? GetTransaction(int Id, int UserId);
     IQueryable<Transaction> GetUserTransactions(int UserId, FilterRequest filter);

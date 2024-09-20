@@ -3,5 +3,5 @@
 namespace SharperExpenser.Services.Interfaces;
 public interface IObserver
 {
-    void Update(Transaction? oldTransaction, Transaction? newTransaction);
+    void Update(Transaction? oldTransaction, Transaction? newTransaction, decimal newExchangeRate, decimal oldExchangeRate);
 }

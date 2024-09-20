@@ -3,17 +3,20 @@ import { createContext, useState } from "react";
 const popupContext = createContext({
   isOpen: false,
   setOpen: () => {},
-  chosenItem: {},
-  setChosenItem: () => {},
+  chosenTransaction: {},
+  setChosenTransaction: () => {},
+  currentGoal: {},
+  setCurrentGoal: () => {}
 });
 
 const PopupProvider = ({ children }) => {
   const [isOpen, setOpen] = useState(false);
-  const [chosenItem, setChosenItem] = useState({});
+  const [chosenTransaction, setChosenTransaction] = useState({});
+  const [currentGoal, setCurrentGoal] = useState({});
 
   return (
     <popupContext.Provider
-      value={{ isOpen, setOpen, chosenItem, setChosenItem }}
+      value={{ isOpen, setOpen, chosenTransaction, setChosenTransaction, currentGoal, setCurrentGoal }}
     >
       {children}
     </popupContext.Provider>

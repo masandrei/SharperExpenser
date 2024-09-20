@@ -14,4 +14,5 @@ public class CreateTransactionRequest
     [Length(1,50)]
     [RegularExpression(@"^[A-z0-9\s]{0,50}$")]
     public string TransactionCategory { get; set; } = null!;
+    public decimal ExchangeRate { get; set; } = 1M;
 }

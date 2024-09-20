@@ -15,16 +15,15 @@ const defaultFormData = {
 function Popup() {
   const [formData, setFormData] = useState(defaultFormData);
   const { isOpen, setOpen } = useContext(popupContext);
-  const { chosenItem, setChosenItem } = useContext(popupContext);
+  const { chosenTransaction, setChosenTransaction } = useContext(popupContext);
   useEffect(() => {
     setFormData({
       ...formData,
-      ...chosenItem,
+      ...chosenTransaction,
     });
-  }, [chosenItem]);
+  }, [chosenTransaction]);
 
   function submitData() {
-    console.log(formData);
     axios
       .put("http://localhost:5266/transaction", formData, {
         headers: {

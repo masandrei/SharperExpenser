@@ -7,7 +7,7 @@ using SharperExpenser.Services.Goals;
 namespace SharperExpenser.Controllers;
 [Authorize]
 [ApiController]
-[Route("goal")]
+[Route("goals")]
 public class GoalController : ControllerBase
 {
     private readonly IGoalService _goalService;
@@ -18,7 +18,7 @@ public class GoalController : ControllerBase
     [HttpGet]
     public IActionResult GetGoals([FromQuery] int UserId)
     {
-        List<Goal> temp = _goalService.GetAllGoals(UserId).ToList();
+        List<Goal> temp = _goalService.GetAllGoals(UserId).OrderBy(goal => goal.Priority).ToList();
         return Ok(temp);
     }
     [HttpGet("{id}")]
@@ -43,9 +43,9 @@ public class GoalController : ControllerBase
             temp);
     }
     [HttpDelete]
-    public IActionResult DeleteGoal([FromQuery] int UserId, [FromQuery] int Id)
+    public IActionResult DeleteGoal([FromQuery] int UserId, [FromBody] int Id, decimal ExchangeRate)
     {
-        _goalService.DeleteGoal(UserId, Id);
+        _goalService.DeleteGoal(UserId, Id, ExchangeRate);
         return Ok();
     }
     [HttpPut]
@@ -54,5 +54,10 @@ public class GoalController : ControllerBase
         _goalService.UpdateGoal(request, UserId);
         return Ok();
     }
-
+    [HttpPut("finish")]
+    public IActionResult FinishGoal([FromQuery] int UserId, [FromBody] int Id, decimal ExchangeRate)
+    {
+        _goalService.FinishGoal(UserId, Id, ExchangeRate);
+        return Ok();
+    }
 }

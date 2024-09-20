@@ -13,9 +13,9 @@ function App() {
       <Navbar/>
       <Popup/>
       <Routes>
-        <Route path="/" element={<Overview/>} />
+        {/* <Route path="/" element={<Overview/>} />
         <Route path="/transactions" element={<TransactionList/>} />
-        <Route path="/categories" element={<Categories/>} />
+        <Route path="/categories" element={<Categories/>} /> */}
         <Route path="/goals" element={<Goals/>}/>
       </Routes>
     </div>

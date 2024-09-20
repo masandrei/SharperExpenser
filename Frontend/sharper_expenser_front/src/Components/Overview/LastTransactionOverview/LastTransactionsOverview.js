@@ -14,7 +14,7 @@ const dateOptions = {
 function LastTransactionsOverview() {
   const [lastTransactions, setLastTransactions] = useState([]);
   const { isOpen, setOpen } = useContext(popupContext);
-  const { chosenItem, setChosenItem } = useContext(popupContext);
+  const { chosenTransaction, setChosenTransaction } = useContext(popupContext);
 
   const openPopup = useCallback(e => {
     setOpen(true);
@@ -22,7 +22,7 @@ function LastTransactionsOverview() {
       e.target.id.split("-");
     
     if(dateGroupLocation && transactionGroupLocation){
-      setChosenItem(
+      setChosenTransaction(
         lastTransactions[dateGroupLocation][transactionGroupLocation]
       );
     }

@@ -1,0 +1,11 @@
+.progress-visual-full
+{
+    display: flex;
+    height: 6px;
+    margin: 20px 0;
+}
+
+.progress-visual-part
+{
+    transition: width 2s;
+}

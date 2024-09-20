@@ -1,4 +1,5 @@
 using k8s.KubeConfigModels;
+using Microsoft.AspNetCore.Mvc;
 using SharperExpenser.DataBaseContexts;
 using SharperExpenser.DataTransferObjects;
 using SharperExpenser.DataTransferObjects.Transaction;
@@ -30,18 +31,18 @@ public class TransactionService : ITransactionService, ISubject
         };
         _transactionContext.TransactionRecords.Add(temp);
         _transactionContext.SaveChanges();
-        Notify(null, temp);
+        Notify(null, temp, request.ExchangeRate);
         return temp;
     }
 
-    public void DeleteTransaction(int id, int userId)
+    public void DeleteTransaction([FromBody]DeleteTransactionRequest request, int userId)
     {
-        Transaction? transaction = _transactionContext.TransactionRecords.FirstOrDefault(transactions => transactions.UserId == userId && transactions.Id == id);
+        Transaction? transaction = _transactionContext.TransactionRecords.FirstOrDefault(transactions => transactions.UserId == userId && transactions.Id == request.TransactionId);
         if (transaction != null)
         {
             _transactionContext.TransactionRecords.Remove(transaction);
             _transactionContext.SaveChanges();
-            Notify(transaction, null);
+            Notify(transaction, null, 1, request.ExchangeRate);
         }
     }
 
@@ -63,7 +64,7 @@ public class TransactionService : ITransactionService, ISubject
         };
         _transactionContext.Entry(temp).CurrentValues.SetValues(newTransaction);
         _transactionContext.SaveChanges();
-        Notify(temp, newTransaction);
+        Notify(temp, newTransaction, request.NewExchangeRate, request.OldExchangeRate);
         return newTransaction;
     }
 
@@ -145,11 +146,11 @@ public class TransactionService : ITransactionService, ISubject
         observers.Remove(observer);
     }
 
-    public void Notify(Transaction? oldTransaction, Transaction? newTransaction)
+    public void Notify(Transaction? oldTransaction, Transaction? newTransaction, decimal newExchangeRate = 1, decimal oldExchangeRate = 1)
     {
         foreach(var observer in observers)
         {
-            observer.Update(oldTransaction, newTransaction);
+            observer.Update(oldTransaction, newTransaction, newExchangeRate, oldExchangeRate);
         }
     }
 }

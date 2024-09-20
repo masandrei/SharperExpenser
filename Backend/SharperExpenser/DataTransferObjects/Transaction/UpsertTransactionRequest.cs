@@ -14,4 +14,6 @@ public class UpsertTransactionRequest
     [Length(1, 50)]
     [RegularExpression(@"^[A-z0-9\s]{0,50}$")]
     public string? Category { get; set; }
+    public decimal NewExchangeRate { get; set; } = 1;
+    public decimal OldExchangeRate { get; set; } = 1;
 }

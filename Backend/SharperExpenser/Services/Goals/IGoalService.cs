@@ -9,5 +9,6 @@ public interface IGoalService : IObserver
     Goal? GetGoal(int UserId, int id);
     Goal? CreateGoal(CreateGoalRequest request, int UserId);
     void UpdateGoal(UpdateGoalRequest request, int UserId);
-    void DeleteGoal(int UserId, int Id);
+    void DeleteGoal(int UserId, int Id, decimal ExchangeRate);
+    void FinishGoal(int UserId, int Id, decimal ExchangeRate);
 }

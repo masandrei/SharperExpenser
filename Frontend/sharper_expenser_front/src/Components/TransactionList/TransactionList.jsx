@@ -21,7 +21,7 @@ function TransactionList() {
   const [pageNumber, setPageNumber] = useState({ value: 1 });
   const [query, setQuery] = useState({});
   const { isOpen, setOpen } = useContext(popupContext);
-  const { chosenItem, setChosenItem } = useContext(popupContext);
+  const { chosenTransaction, setChosenTransaction } = useContext(popupContext);
 
   const openPopup = useCallback(
     (e) => {
@@ -30,7 +30,7 @@ function TransactionList() {
         e.target.id.split("-");
 
       if (dateGroupLocation && transactionGroupLocation) {
-        setChosenItem(
+        setChosenTransaction(
           lastTransactions[dateGroupLocation][transactionGroupLocation]
         );
       }

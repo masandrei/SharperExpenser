@@ -23,11 +23,11 @@ public class TransactionController : ControllerBase
     public IActionResult GetTransactionPage([FromQuery] FilterRequest filter, [FromQuery] GetTransactionPageRequest pageRequest)
     {
         var transactions = _transactionService.GetUserTransactions(pageRequest.UserId, filter)
-        .Where(transaction => transaction.TransactionDate < pageRequest.pageCursorDate ||
-          (transaction.TransactionDate == pageRequest.pageCursorDate && transaction.Id > pageRequest.pageCursorId))
+        .Where(transaction => transaction.TransactionDate < pageRequest.PageCursorDate ||
+          (transaction.TransactionDate == pageRequest.PageCursorDate && transaction.Id > pageRequest.PageCursorId))
         .OrderByDescending(transaction => transaction.TransactionDate)
         .ThenBy(transaction => transaction.Id)
-        .Take(pageRequest.pageSize)
+        .Take(pageRequest.PageSize)
         .ToList()
         .GroupBy(transaction => transaction.TransactionDate.Date)
         .Select(g => g.OrderByDescending(t => t.TransactionDate).ThenBy(t => t.Id).ToList())
@@ -87,7 +87,7 @@ public class TransactionController : ControllerBase
     [HttpDelete]
     public IActionResult DeleteTransaction([FromBody]DeleteTransactionRequest request, [FromQuery] int UserId)
     {
-        _transactionService.DeleteTransaction(request.TransactionId, UserId);
+        _transactionService.DeleteTransaction(request, UserId);
         return Ok();
     }
 
