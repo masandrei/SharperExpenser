@@ -4,14 +4,44 @@ import React, { useCallback, useEffect, useState, useContext } from "react";
 import "./Goals.css";
 import ProgressLine from "../ProgressLine/ProgressLine";
 import { popupContext } from "../../storage/ContextStorage";
+import CurrencyService from "../../lib/CurrencyService.js";
 
 function Goals() {
   const [goalsList, setGoalsList] = useState([]);
   const [finishedGoalsList, setFinishedGoalsList] = useState([]);
   const [isFinishedSection, setIsFinishedSection] = useState(false);
-  const {currentGoal, setCurrentGoal} = useContext(popupContext)
+  const { currentGoal, setCurrentGoal } = useContext(popupContext);
+  const finishGoal = async (event) => {
+    axios
+      .put(
+        "http://localhost:5266/goals/finish",
+        {
+          Id: currentGoal.id,
+          ExchangeRate:
+            goalsList.length > 1
+              ? await CurrencyService.getExchangeRateRequest(
+                  new Date(),
+                  currentGoal.currency,
+                  goalsList[1].currency
+                )
+              : 1,
+        },
+        {
+          headers: {
+            Authorization:
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI2NzU4MDA2LCJleHAiOjE3MjgwNTQwMDYsImlhdCI6MTcyNjc1ODAwNn0.9gxCKhgM1tucAm1eQr9ANMIOnM8ReXy-6rBqx_-vang",
+          },
+        }
+      )
+      .then((response) => {
+        const updatedGoals = [...goalsList];
+        updatedGoals.shift();
+        setGoalsList(updatedGoals);
+      })
+      .catch((err) => console.error(err));
+  };
   const increasePriority = useCallback(
-    (event) => {
+    async (event) => {
       const listItemIndex = Number.parseInt(event.target.value);
 
       const updatedGoalsList = [...goalsList];
@@ -24,7 +54,14 @@ function Goals() {
           {
             Id: goalToUpdate.id,
             UpdatePriority: goalAbove.priority,
-            ExchangeRate: 1,
+            ExchangeRate:
+              goalToUpdate === goalsList[1]
+                ? await CurrencyService.getExchangeRateRequest(
+                    new Date(),
+                    currentGoal.currency,
+                    goalsList[1].currency
+                  )
+                : 1,
           },
           {
             headers: {
@@ -46,7 +83,7 @@ function Goals() {
   );
 
   const decreasePriority = useCallback(
-    (event) => {
+    async (event) => {
       const listItemIndex = Number.parseInt(event.target.value);
       const updatedGoals = [...goalsList];
       const goalToUpdate = updatedGoals[listItemIndex];
@@ -57,7 +94,14 @@ function Goals() {
           {
             Id: goalToUpdate.id,
             UpdatePriority: goalBelow.priority,
-            ExchangeRate: 1,
+            ExchangeRate:
+              goalToUpdate === currentGoal
+                ? await CurrencyService.getExchangeRateRequest(
+                    new Date(),
+                    currentGoal.currency,
+                    goalsList[1].currency
+                  )
+                : 1,
           },
           {
             headers: {
@@ -123,6 +167,7 @@ function Goals() {
         console.log(response.data);
         setGoalsList([...goalsList, ...newGoals]);
         setFinishedGoalsList([...finishedGoalsList, ...newFinishedGoals]);
+        setCurrentGoal(goalsList[0] || newGoals[0] || null);
       })
       .catch((err) => console.error(err));
   }, []);
@@ -144,7 +189,9 @@ function Goals() {
                 <div className="actions">
                   {!isFinishedSection &&
                     goal.additionalAmount + goal.amountAtTheStartOfMonth >=
-                      goal.moneyToGather && <button>{"\u2713"}</button>}
+                      goal.moneyToGather && (
+                      <button onClick={finishGoal}>{"\u2713"}</button>
+                    )}
                   {!isFinishedSection && (
                     <div className="set-priority-block">
                       {index !== 0 && (
@@ -172,7 +219,7 @@ function Goals() {
                       color: goal.additionalAmount > 0 ? "#66FF66" : "#990000",
                     }}
                   >
-                    {goal.additionalAmount}
+                    ({goal.additionalAmount})
                   </div>
                 )}
                 /{goal.moneyToGather} {goal.currency}

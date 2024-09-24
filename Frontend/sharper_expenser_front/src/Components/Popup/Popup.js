@@ -3,13 +3,14 @@ import axios from "axios";
 
 import "./Popup.css";
 import { popupContext } from "../../storage/ContextStorage";
+import CurrencyService from "../../lib/CurrencyService";
 
 const defaultFormData = {
   id: 0,
   transactionDate: "",
   amount: 0,
-  currency: "",
   category: "",
+  currency: "",
 };
 
 function Popup() {
@@ -19,30 +20,78 @@ function Popup() {
   const { currentGoal, setCurrentGoal } = useContext(popupContext);
   useEffect(() => {
     setFormData({
-      ...formData,
+      ...defaultFormData,
       ...chosenTransaction,
     });
   }, [chosenTransaction]);
 
-  function submitData() {
-    let exchangeRate = 1;
-    if(chosenTransaction.currency !== currentGoal.currency){
-      
+  async function submitData(e) {
+    e.preventDefault();
+    let newExchangeRate = 1;
+    let oldExchangeRate = 1;
+    console.log(currentGoal, formData?.currency);
+    if (currentGoal !== null) {
+      newExchangeRate = await CurrencyService.getExchangeRateRequest(
+        new Date(formData.transactionDate),
+        formData.currency,
+        currentGoal.currency
+      );
+      if (
+        chosenTransaction !== null &&
+        chosenTransaction.transactionDate !== formData.transactionDate
+      ) {
+        oldExchangeRate = await CurrencyService.getExchangeRateRequest(
+          new Date(chosenTransaction.transactionDate),
+          chosenTransaction.currency,
+          currentGoal.currency
+        );
+      } else {
+        oldExchangeRate = newExchangeRate;
+      }
     }
-    axios
-      .put("http://localhost:5266/transaction", formData, {
-        headers: {
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI1MDI1Nzc0LCJleHAiOjE3MjYzMjE3NzQsImlhdCI6MTcyNTAyNTc3NH0.pq-RozU4vPZcXX0MnIp-8LkEGoOzh9Dl30wYjRsWcPY",
-          accept: "*/*",
-          "Content-Type": "application/json",
-        },
-      })
-      .then(() => {
-        setOpen(false);
-        setChosenTransaction({});
-      })
-      .catch((err) => console.log(err));
+    if (chosenTransaction === null) {
+      axios
+        .post(
+          "http://localhost:5266/transaction",
+          { ...formData, exchangeRate: newExchangeRate },
+          {
+            headers: {
+              Authorization:
+                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI2NzU4MDA2LCJleHAiOjE3MjgwNTQwMDYsImlhdCI6MTcyNjc1ODAwNn0.9gxCKhgM1tucAm1eQr9ANMIOnM8ReXy-6rBqx_-vang",
+              "Content-Type": "application/json"
+            },
+          }
+        )
+        .then((response) => {
+          console.log(response.data);
+          setOpen(false);
+          setChosenTransaction(null);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    } else {
+      console.log(formData);
+      axios
+        .put(
+          "http://localhost:5266/transaction",
+          { ...formData, newExchangeRate, oldExchangeRate },
+          {
+            headers: {
+              Authorization:
+                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI2NzU4MDA2LCJleHAiOjE3MjgwNTQwMDYsImlhdCI6MTcyNjc1ODAwNn0.9gxCKhgM1tucAm1eQr9ANMIOnM8ReXy-6rBqx_-vang",
+              accept: "*/*",
+              "Content-Type": "application/json",
+            },
+          }
+        )
+        .then(() => {
+          console.log("transaction has been sent");
+          setOpen(false);
+          setChosenTransaction(null);
+        })
+        .catch((err) => console.log(err.response));
+    }
   }
 
   const handleInputChange = useCallback(
@@ -90,41 +139,46 @@ function Popup() {
               <label htmlFor="transaction-currency">
                 Transaction Currency:
               </label>
-              <select
-                id="transaction-currency"
-                name="currency"
-                value={formData.currency}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="GBP">GBP</option>
-              </select>
+              {chosenTransaction?.currency ? (
+                chosenTransaction.currency
+              ) : (
+                <select
+                  id="transaction-currency"
+                  name="currency"
+                  value={formData.currency}
+                  onChange={handleInputChange}
+                  required
+                >
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="GBP">GBP</option>
+                </select>
+              )}
             </div>
 
             <div>
               <label htmlFor="transaction-category">
                 Transaction Category:
               </label>
-              <select
-                id="transaction-category"
-                name="category"
-                onChange={handleInputChange}
+              <input
+                type="text"
+                minLength="1"
+                maxLength="50"
                 value={formData.category}
+                onChange={handleInputChange}
+                name="category"
                 required
-              >
-                <option value="Groceries">Groceries</option>
-                <option value="Utilities">Utilities</option>
-                <option value="Entertainment">Entertainment</option>
-              </select>
+              />
             </div>
 
             <button type="submit" onClick={submitData}>
               Submit
             </button>
           </form>
-          <button onClick={() => setOpen(false)}>close</button>
+          <button onClick={() => {
+            setOpen(false);
+            setChosenTransaction(null);
+          }}>close</button>
         </div>
       </div>
     );

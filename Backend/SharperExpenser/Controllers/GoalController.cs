@@ -43,9 +43,9 @@ public class GoalController : ControllerBase
             temp);
     }
     [HttpDelete]
-    public IActionResult DeleteGoal([FromQuery] int UserId, [FromBody] int Id, decimal ExchangeRate)
+    public IActionResult DeleteGoal([FromQuery] int UserId, [FromBody] DeleteGoalRequest request)
     {
-        _goalService.DeleteGoal(UserId, Id, ExchangeRate);
+        _goalService.DeleteGoal(UserId, request.Id, request.ExchangeRate);
         return Ok();
     }
     [HttpPut]
@@ -55,9 +55,9 @@ public class GoalController : ControllerBase
         return Ok();
     }
     [HttpPut("finish")]
-    public IActionResult FinishGoal([FromQuery] int UserId, [FromBody] int Id, decimal ExchangeRate)
+    public IActionResult FinishGoal([FromQuery] int UserId, [FromBody] FinishGoalRequest request)
     {
-        _goalService.FinishGoal(UserId, Id, ExchangeRate);
+        _goalService.FinishGoal(UserId, request.Id, request.ExchangeRate);
         return Ok();
     }
 }

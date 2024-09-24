@@ -1,6 +1,8 @@
+using System.Net.Http.Headers;
 using System.Text;
 using Coravel;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SharperExpenser.DataBaseContexts;
@@ -53,6 +55,12 @@ var builder = WebApplication.CreateBuilder(args);
                .AllowAnyMethod();
             });
     });
+    builder.Services.AddHttpLogging(options => 
+    {
+        options.LoggingFields = HttpLoggingFields.All;
+        options.RequestHeaders.Add("Referer");
+        options.ResponseHeaders.Add("MyResponseHeader");
+    });
 }
 
 
@@ -63,6 +71,7 @@ var app = builder.Build();
     //    scheduler.Schedule<GetExchangeRatesTask>()
     //    .Monthly();
     //});
+    app.UseHttpLogging();
     app.UseHttpsRedirection();
     app.UseRouting();
     app.UseCors("AllowReactApp");

@@ -11,8 +11,8 @@ const popupContext = createContext({
 
 const PopupProvider = ({ children }) => {
   const [isOpen, setOpen] = useState(false);
-  const [chosenTransaction, setChosenTransaction] = useState({});
-  const [currentGoal, setCurrentGoal] = useState({});
+  const [chosenTransaction, setChosenTransaction] = useState(null);
+  const [currentGoal, setCurrentGoal] = useState(null);
 
   return (
     <popupContext.Provider

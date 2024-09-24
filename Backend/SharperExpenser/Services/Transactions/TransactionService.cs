@@ -24,9 +24,9 @@ public class TransactionService : ITransactionService, ISubject
         Transaction temp = new Transaction
         {
             UserId = UserId,
-            Amount = request.TransactionAmount,
-            Category = request.TransactionCategory,
-            Currency = request.TransactionCurrency,
+            Amount = request.Amount,
+            Category = request.Category,
+            Currency = request.Currency,
             TransactionDate = request.TransactionDate
         };
         _transactionContext.TransactionRecords.Add(temp);
@@ -62,9 +62,9 @@ public class TransactionService : ITransactionService, ISubject
             Category = request.Category ?? temp.Category,
             Currency = temp.Currency,
         };
+        Notify(temp, newTransaction, request.NewExchangeRate, request.OldExchangeRate);
         _transactionContext.Entry(temp).CurrentValues.SetValues(newTransaction);
         _transactionContext.SaveChanges();
-        Notify(temp, newTransaction, request.NewExchangeRate, request.OldExchangeRate);
         return newTransaction;
     }
 
