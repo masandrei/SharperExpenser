@@ -1,11 +1,11 @@
 using SharperExpenser.DataTransferObjects;
 using SharperExpenser.Models;
-using SharperExpenser.Helpers;
+using SharperExpenser.Services.Interfaces;
 using SharperExpenser.DataTransferObjects.Transaction;
 
 namespace SharperExpenser.Services.Transactions;
 
-public interface ITransactionService
+public interface ITransactionService : ISubject
 {
     Transaction CreateTransaction(CreateTransactionRequest request, int UserId);
     void DeleteTransaction(DeleteTransactionRequest request, int UserId);

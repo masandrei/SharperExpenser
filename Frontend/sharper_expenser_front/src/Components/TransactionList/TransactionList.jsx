@@ -20,13 +20,12 @@ function TransactionList() {
   const [cursorId, setCursorId] = useState(0);
   const [pageNumber, setPageNumber] = useState({ value: 1 });
   const [query, setQuery] = useState({});
-  const { isOpen, setOpen } = useContext(popupContext);
-  const { chosenTransaction, setChosenTransaction } = useContext(popupContext);
+  const { popupState, setPopupState, chosenTransaction, setChosenTransaction } =
+    useContext(popupContext);
 
   const openPopup = useCallback(
     (e) => {
-      setOpen(true);
-      const [type, dateGroupLocation, transactionGroupLocation] =
+      const [action, dateGroupLocation, transactionGroupLocation] =
         e.target.id.split("-");
 
       if (dateGroupLocation && transactionGroupLocation) {
@@ -34,6 +33,7 @@ function TransactionList() {
           lastTransactions[dateGroupLocation][transactionGroupLocation]
         );
       }
+      setPopupState({action: action, entity: "transaction"});
     },
     [lastTransactions]
   );
@@ -63,17 +63,20 @@ function TransactionList() {
         const page = response.data.transactionPage;
         setCursorDate(new Date(response.data.nextPageCursorDate));
         setCursorId(response.data.nextPageCursorId);
-        if(page.length == 0){
+        if (page.length == 0) {
           return;
         }
-        if(lastTransactions.length == 0){
+        if (lastTransactions.length == 0) {
           setLastTransactions(page);
         }
         const [firstGroup, ...others] = page;
-        const prevLastDate =
-          lastTransactions.at(-1)?.at(0).transactionDate.split("T") || [null];
-        const nextFirstDate =
-          firstGroup[0]?.transactionDate.split("T") || [null];
+        const prevLastDate = lastTransactions
+          .at(-1)
+          ?.at(0)
+          .transactionDate.split("T") || [null];
+        const nextFirstDate = firstGroup[0]?.transactionDate.split("T") || [
+          null,
+        ];
         if (prevLastDate[0] === nextFirstDate[0]) {
           lastTransactions.at(-1).push(...firstGroup);
           setLastTransactions((prev) => [...prev, ...others]);
@@ -105,7 +108,7 @@ function TransactionList() {
       <Filter setQuery={setQuery} />
       <div id="transactions-top-menu">
         <span>Last Transactions</span>
-        <label onClick={openPopup}>Add</label>
+        <label onClick={() => setPopupState({action: "create", entity: "transaction"})}>Add</label>
       </div>
       <div id="transactionList">
         {lastTransactions.map((dateGroup, dateIndex) => (
@@ -124,12 +127,21 @@ function TransactionList() {
               >
                 <div className="category">{transaction.category}</div>
                 <div className="transaction-money-content">
-                  <label
-                    id={`edit-${dateIndex}-${transactionIndex}`}
-                    onClick={openPopup}
-                  >
-                    edit
-                  </label>
+                  <div className="transaction-edit-delete-block">
+                    <label
+                      id={`update-${dateIndex}-${transactionIndex}`}
+                      onClick={openPopup}
+                    >
+                      edit
+                    </label>
+                    <label
+                      id={`delete-${dateIndex}-${transaction}`}
+                      onClick={openPopup}
+                    >
+                      delete
+                    </label>
+                  </div>
+
                   <div
                     style={{ color: transaction.amount > 0 ? "green" : "red" }}
                   >

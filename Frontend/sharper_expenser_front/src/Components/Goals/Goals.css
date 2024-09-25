@@ -23,16 +23,22 @@
 
 .category-selector
 {
-    width: 90%;
+    
     display: flex;
     flex-direction: row;
-    justify-content: flex-start;
     align-items: center;
 }
 .category-selector label
 {
     color: #616161;
     margin: 0 0.5rem;
+}
+.goals-list-control-block
+{
+    width: 90%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
 .goals-list,

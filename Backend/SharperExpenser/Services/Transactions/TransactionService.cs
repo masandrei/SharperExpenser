@@ -9,7 +9,7 @@ using SharperExpenser.Services.Interfaces;
 
 namespace SharperExpenser.Services.Transactions;
 
-public class TransactionService : ITransactionService, ISubject
+public class TransactionService : ITransactionService
 {
     private readonly List<IObserver> observers;
     private readonly ApplicationContext _transactionContext;

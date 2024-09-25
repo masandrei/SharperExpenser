@@ -10,7 +10,19 @@ function Goals() {
   const [goalsList, setGoalsList] = useState([]);
   const [finishedGoalsList, setFinishedGoalsList] = useState([]);
   const [isFinishedSection, setIsFinishedSection] = useState(false);
-  const { currentGoal, setCurrentGoal } = useContext(popupContext);
+  const { currentGoal, setCurrentGoal, popupState, setPopupState, setChosenGoal } = useContext(popupContext);
+  const addGoal = () => {
+    if(goalsList.length === 5){
+      return;
+    }
+    setPopupState({action:"create", entity:"goal"});
+  }
+
+  const openPopup = useCallback((event) => {
+    const [action, id, type] = event.target.id.split("-");
+    setChosenGoal(type === "finished" ? goalsList[id] : finishedGoalsList[id]);
+    setPopupState({action, entity:"goal"});
+  }, [goalsList, finishedGoalsList]);
   const finishGoal = async (event) => {
     axios
       .put(
@@ -40,6 +52,15 @@ function Goals() {
       })
       .catch((err) => console.error(err));
   };
+  const deleteGoal = useCallback(
+    async (event) => {
+      const listItemIndex = Number.parseInt(event.target.value);
+      const updatedList = isFinishedSection
+        ? [...finishedGoalsList]
+        : [...goalsList];
+    },
+    [goalsList]
+  );
   const increasePriority = useCallback(
     async (event) => {
       const listItemIndex = Number.parseInt(event.target.value);
@@ -122,35 +143,6 @@ function Goals() {
     [goalsList]
   );
 
-  const generatePercentages = useCallback((goal) => {
-    return [
-      {
-        percentage: `${
-          ((goal.amountAtTheStartOfMonth + Math.min(0, goal.additionalAmount)) /
-            goal.moneyToGather) *
-          100
-        }%`,
-        backgroundColor: "#4C9900",
-      },
-      {
-        percentage: `${
-          ((goal.additionalAmount > 0
-            ? Math.min(
-                goal.additionalAmount,
-                goal.moneyToGather - goal.amountAtTheStartOfMonth
-              )
-            : Math.min(
-                Math.abs(goal.additionalAmount),
-                goal.amountAtTheStartOfMonth
-              )) /
-            goal.moneyToGather) *
-          100
-        }%`,
-        backgroundColor: goal.additionalAmount > 0 ? "#66FF66" : "#990000",
-      },
-    ];
-  });
-
   useEffect(() => {
     axios
       .get("http://localhost:5266/goals", {
@@ -173,9 +165,12 @@ function Goals() {
   }, []);
   return (
     <div className="goals-component">
-      <div className="category-selector">
-        <label onClick={() => setIsFinishedSection(false)}>Arranged</label>
-        <label onClick={() => setIsFinishedSection(true)}>Finished</label>
+      <div className="goals-list-control-block">
+        <div className="category-selector">
+          <label onClick={() => setIsFinishedSection(false)}>Arranged</label>
+          <label onClick={() => setIsFinishedSection(true)}>Finished</label>
+        </div>
+        <label onClick={addGoal}>Add</label>
       </div>
       <div className={isFinishedSection ? "goals-list-finished" : "goals-list"}>
         {(isFinishedSection ? finishedGoalsList : goalsList).map(
@@ -206,8 +201,8 @@ function Goals() {
                       )}
                     </div>
                   )}
-
-                  <button>{isFinishedSection ? "\u232B" : "\u270E"}</button>
+                  <label id={`delete-${index}-${isFinishedSection ? 'finished': ''}`} onClick={openPopup}>{"\u232B"}</label>
+                  {!isFinishedSection && <label id={`update-${index}`} onClick={openPopup}>{"\u270E"}</label>}
                 </div>
               </div>
               <div className="progress-label">
@@ -225,10 +220,7 @@ function Goals() {
                 /{goal.moneyToGather} {goal.currency}
               </div>
               <div>
-                <ProgressLine
-                  backgroundColor="lightgrey"
-                  visualParts={generatePercentages(goal)}
-                />
+                <ProgressLine backgroundColor="lightgrey" data={goal} />
               </div>
             </div>
           )

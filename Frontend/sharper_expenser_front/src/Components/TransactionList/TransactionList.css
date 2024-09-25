@@ -55,3 +55,13 @@ span
     flex-grow: 1;
     column-gap: 1%;
 }
+
+.transaction-edit-delete-block
+{
+    display: flex;
+    flex-direction: row;
+}
+.transaction-edit-delete-block label
+{
+    margin: auto;
+}

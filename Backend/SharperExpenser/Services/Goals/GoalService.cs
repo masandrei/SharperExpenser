@@ -21,12 +21,12 @@ public class GoalService : IGoalService
         Goal NewGoal = new Goal
         {
             UserId = UserId,
-            GoalName = request.CreateGoalName,
+            GoalName = request.GoalName,
             MoneyStartingPeriod = DateTime.Now,
             Priority = (LastByPriority?.Priority ?? 0) + 1,
             AmountAtTheStartOfMonth = 0M,
             AdditionalAmount = 0M,
-            MoneyToGather = request.CreateMoneyToGather,
+            MoneyToGather = request.MoneyToGather,
             Currency = request.CreateCurrency,
             IsFinished = false
         };
@@ -193,8 +193,8 @@ public class GoalService : IGoalService
                 }
             }
         }
-        temp.GoalName = request.UpdateGoalName ?? temp.GoalName;
-        temp.MoneyToGather = request.UpdateMoneyToGather ?? temp.MoneyToGather;
+        temp.GoalName = request.GoalName ?? temp.GoalName;
+        temp.MoneyToGather = request.MoneyToGather ?? temp.MoneyToGather;
         temp.Currency = request.UpdateCurrency ?? temp.Currency;
         _goalContext.SaveChanges();
     }

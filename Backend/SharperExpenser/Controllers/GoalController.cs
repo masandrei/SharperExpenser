@@ -31,6 +31,12 @@ public class GoalController : ControllerBase
         }
         return Ok(temp);
     }
+    [HttpGet("active")]
+    public IActionResult GetActive([FromQuery] int UserId)
+    {
+        var activeGoal = _goalService.GetAllGoals(UserId).Where(goal => !goal.IsFinished).OrderBy(goal => goal.Priority).FirstOrDefault();
+        return Ok(activeGoal);
+    }
     [HttpPost]
     public IActionResult CreateNewGoal([FromBody] CreateGoalRequest request, [FromQuery] int UserId)
     {
