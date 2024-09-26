@@ -13,7 +13,7 @@ export const AuthRoute = ({ children }) => {
     if (!getAccessToken()) {
       setPopupState({ action: "login", entity: "user" });
     }
-  }, [popupState]);
+  }, []);
 
   return children;
 };

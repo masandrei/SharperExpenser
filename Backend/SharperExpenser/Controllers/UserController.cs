@@ -4,6 +4,7 @@ using SharperExpenser.Services.Users;
 using SharperExpenser.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using SharperExpenser.DataTransferObjects.User;
+using SharperExpenser.Helpers.Validation;
 
 namespace SharperExpenser.Controllers;
 [ApiController]
@@ -20,6 +21,7 @@ public class UserController : ControllerBase
 
     [HttpGet]
     [Authorize]
+    [TypeFilter(typeof(CheckTokenClaimsFilter))]
     public IActionResult GetUserInfo([FromQuery] int UserId)
     {
         var user = _userService.GetUser(UserId);

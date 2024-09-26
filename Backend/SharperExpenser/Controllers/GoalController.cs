@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SharperExpenser.DataTransferObjects.Goal;
+using SharperExpenser.Helpers.Validation;
 using SharperExpenser.Models;
 using SharperExpenser.Services.Goals;
 
 namespace SharperExpenser.Controllers;
 [Authorize]
+[TypeFilter(typeof(CheckTokenClaimsFilter))]
 [ApiController]
 [Route("goals")]
 public class GoalController : ControllerBase

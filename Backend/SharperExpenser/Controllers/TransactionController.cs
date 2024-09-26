@@ -5,10 +5,12 @@ using SharperExpenser.Services.Transactions;
 using Microsoft.AspNetCore.Authorization;
 using SharperExpenser.DataTransferObjects;
 using SharperExpenser.DataTransferObjects.Transaction;
+using SharperExpenser.Helpers.Validation;
 
 namespace SharperExpenser.Controllers;
 
 [Authorize]
+[TypeFilter(typeof(CheckTokenClaimsFilter))]
 [ApiController]
 [Route("/transaction")]
 public class TransactionController : ControllerBase

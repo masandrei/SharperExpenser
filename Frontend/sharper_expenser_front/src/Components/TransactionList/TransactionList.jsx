@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useContext } from "react";
 import { popupContext } from "../../storage/ContextStorage";
-import axios from "axios";
+import dayjs from "dayjs";
 
-import DataHelper from "../../lib/DataHelper";
+import { POPUP_STATES } from "../Popup/Popup";
 import Filter from "../Filter/Filter";
 import "./TransactionList.css";
+import transactionCalls from "../../lib/apiCalls/transactionCalls";
 
 const dateOptions = {
   day: "numeric",
@@ -14,26 +15,30 @@ const dateOptions = {
 
 const unixEpoch = new Date(0);
 
-function TransactionList() {
+function TransactionList({isShorten}) {
+  console.log(isShorten);
   const [lastTransactions, setLastTransactions] = useState([]);
   const [cursorDate, setCursorDate] = useState(new Date());
   const [cursorId, setCursorId] = useState(0);
   const [pageNumber, setPageNumber] = useState({ value: 1 });
   const [query, setQuery] = useState({});
-  const { popupState, setPopupState, chosenTransaction, setChosenTransaction } =
-    useContext(popupContext);
+  const { setOpen, togglePopup } = useContext(popupContext);
 
   const openPopup = useCallback(
     (e) => {
       const [action, dateGroupLocation, transactionGroupLocation] =
         e.target.id.split("-");
-
+      let chosenTransaction = null;
       if (dateGroupLocation && transactionGroupLocation) {
-        setChosenTransaction(
-          lastTransactions[dateGroupLocation][transactionGroupLocation]
-        );
+        chosenTransaction =
+          lastTransactions[dateGroupLocation][transactionGroupLocation];
       }
-      setPopupState({action: action, entity: "transaction"});
+      togglePopup({
+        action: action,
+        entity: POPUP_STATES.TRANSACTION.TITLE,
+        chosenTransaction,
+      });
+      setOpen(true);
     },
     [lastTransactions]
   );
@@ -46,27 +51,21 @@ function TransactionList() {
   }, [query]);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5266/transaction", {
-        headers: {
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI2NzU4MDA2LCJleHAiOjE3MjgwNTQwMDYsImlhdCI6MTcyNjc1ODAwNn0.9gxCKhgM1tucAm1eQr9ANMIOnM8ReXy-6rBqx_-vang",
-        },
-        params: {
-          PageCursorDate: cursorDate,
-          PageCursorId: cursorId,
-          PageSize: 10,
-          ...query,
-        },
+    transactionCalls
+      .getTransactionPage({
+        PageCursorDate: cursorDate,
+        PageCursorId: cursorId,
+        PageSize: 10,
+        ...query,
       })
       .then((response) => {
         const page = response.data.transactionPage;
         setCursorDate(new Date(response.data.nextPageCursorDate));
         setCursorId(response.data.nextPageCursorId);
-        if (page.length == 0) {
+        if (page.length === 0) {
           return;
         }
-        if (lastTransactions.length == 0) {
+        if (lastTransactions.length === 0) {
           setLastTransactions(page);
         }
         const [firstGroup, ...others] = page;
@@ -91,7 +90,8 @@ function TransactionList() {
     if (
       window.innerHeight + document.documentElement.scrollTop + 1 >=
         document.documentElement.scrollHeight &&
-      cursorDate > unixEpoch
+      cursorDate > unixEpoch &&
+      !isShorten
     ) {
       setPageNumber((pageNumber) => {
         return { value: pageNumber.value + 1 };
@@ -104,57 +104,68 @@ function TransactionList() {
   });
 
   return (
-    <div className="transactions-overview">
-      <Filter setQuery={setQuery} />
-      <div id="transactions-top-menu">
-        <span>Last Transactions</span>
-        <label onClick={() => setPopupState({action: "create", entity: "transaction"})}>Add</label>
-      </div>
-      <div id="transactionList">
-        {lastTransactions.map((dateGroup, dateIndex) => (
-          <div key={dateGroup[0].transactionDate + dateIndex}>
-            <span>
-              {new Date(dateGroup[0].transactionDate).toLocaleDateString(
-                "en-US",
-                dateOptions
-              )}
-            </span>
-            {dateGroup.map((transaction, transactionIndex) => (
-              <div
-                key={transaction.id}
-                id={`${dateIndex}-${transactionIndex}`}
-                className="transaction-list-element"
-              >
-                <div className="category">{transaction.category}</div>
-                <div className="transaction-money-content">
-                  <div className="transaction-edit-delete-block">
-                    <label
-                      id={`update-${dateIndex}-${transactionIndex}`}
-                      onClick={openPopup}
-                    >
-                      edit
-                    </label>
-                    <label
-                      id={`delete-${dateIndex}-${transaction}`}
-                      onClick={openPopup}
-                    >
-                      delete
-                    </label>
-                  </div>
+    <div className="tranctions">
+      {!isShorten && <Filter setQuery={setQuery} />}
+      <div className="transactions-overview">
+        <div id="transactions-top-menu">
+          <span>Last Transactions</span>
+          <label
+            onClick={() =>
+              togglePopup({
+                action: POPUP_STATES.TRANSACTION.CREATE,
+                entity: POPUP_STATES.TRANSACTION.TITLE,
+              })
+            }
+          >
+            Add
+          </label>
+        </div>
+        <div id="transactionList">
+          {lastTransactions.map((dateGroup, dateIndex) => (
+            <div key={dateGroup[0].transactionDate + dateIndex}>
+              <span>
+                {new Date(dateGroup[0].transactionDate).toLocaleDateString(
+                  "en-US",
+                  dateOptions
+                )}
+              </span>
+              {dateGroup.map((transaction, transactionIndex) => (
+                <div
+                  key={transaction.id}
+                  id={`${dateIndex}-${transactionIndex}`}
+                  className="transaction-list-element"
+                >
+                  <div className="category">{transaction.category}</div>
+                  <div className="transaction-money-content">
+                    <div className="transaction-edit-delete-block">
+                      <label
+                        id={`update-${dateIndex}-${transactionIndex}`}
+                        onClick={openPopup}
+                      >
+                        edit
+                      </label>
+                      <label
+                        id={`delete-${dateIndex}-${transaction}`}
+                        onClick={openPopup}
+                      >
+                        delete
+                      </label>
+                    </div>
 
-                  <div
-                    style={{ color: transaction.amount > 0 ? "green" : "red" }}
-                  >
-                    {transaction.amount + " " + transaction.currency}
+                    <div
+                      style={{
+                        color: transaction.amount > 0 ? "green" : "red",
+                      }}
+                    >
+                      {transaction.amount + " " + transaction.currency}
+                    </div>
+                    {dayjs(transaction.transactionDate).format("HH:MM")}
                   </div>
-                  {DataHelper.formatTimeString(
-                    new Date(transaction.transactionDate)
-                  )}
                 </div>
-              </div>
-            ))}
-          </div>
-        ))}
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

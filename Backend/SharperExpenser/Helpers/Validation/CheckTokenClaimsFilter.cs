@@ -15,7 +15,7 @@ public class CheckTokenClaimsFilter : Attribute, IAsyncResourceFilter
     public async Task OnResourceExecutionAsync(ResourceExecutingContext context, ResourceExecutionDelegate next)
     {
         _authService = context.HttpContext.RequestServices.GetService<IAuthService>();
-        var UserId = _authService.ValidateToken(context.HttpContext.Request.Headers.Authorization);
+        var UserId = _authService.ValidateToken(context.HttpContext.Request.Cookies["access_token"]);
         if (UserId == string.Empty)
         {
             context.Result = new UnauthorizedResult();

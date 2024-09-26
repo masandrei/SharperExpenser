@@ -28,7 +28,6 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddTransient<IAuthService, AuthService>();
     builder.Services.AddMvc(opt =>
     {
-        opt.Filters.Add<CheckTokenClaimsFilter>();
         opt.Filters.Add<ValidationFilter>();
     });
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -36,6 +35,14 @@ var builder = WebApplication.CreateBuilder(args);
         {
             x.RequireHttpsMetadata = false;
             x.SaveToken = true;
+            x.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    context.Token = context.Request.Cookies["access_token"];
+                    return Task.CompletedTask;
+                }
+            };
             x.TokenValidationParameters = new TokenValidationParameters
             {
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(AuthSettings.PrivateKey)),
@@ -52,7 +59,8 @@ var builder = WebApplication.CreateBuilder(args);
             {
                 builder.WithOrigins("http://localhost:3000")
                 .AllowAnyHeader()
-               .AllowAnyMethod();
+               .AllowAnyMethod()
+               .AllowCredentials();
             });
     });
     builder.Services.AddHttpLogging(options => 

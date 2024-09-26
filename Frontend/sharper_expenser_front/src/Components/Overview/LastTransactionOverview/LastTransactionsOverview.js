@@ -31,10 +31,7 @@ function LastTransactionsOverview() {
   useEffect(() => {
     axios
       .get("http://localhost:5266/transaction", {
-        headers: {
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI2NzU4MDA2LCJleHAiOjE3MjgwNTQwMDYsImlhdCI6MTcyNjc1ODAwNn0.9gxCKhgM1tucAm1eQr9ANMIOnM8ReXy-6rBqx_-vang"
-        },
+        withCredentials: true,
         params:{
           pageCursorDate: new Date().toISOString(),
           pageCursorId: 0,

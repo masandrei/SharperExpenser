@@ -1,11 +1,8 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
-
 import ExpensesOverview from "./ExpensesOverView/ExpensesOverview";
-import LastTransactionsOverview from "./LastTransactionOverview/LastTransactionsOverview";
 import CurrentGoalOverview from "./CurrentGoalOverview/CurrentGoalOverview";
 
 import "./Overview.css";
+import TransactionList from "../TransactionList/TransactionList";
 
 function Overview() {
 
@@ -16,7 +13,7 @@ function Overview() {
         <CurrentGoalOverview />
       </div>
       <div className="column" style={{ width: "30%" }}>
-        <LastTransactionsOverview/>
+        <TransactionList isShorten={true}/>
       </div>
     </div>
   );

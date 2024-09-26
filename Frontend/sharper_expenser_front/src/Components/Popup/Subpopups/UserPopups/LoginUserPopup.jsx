@@ -1,7 +1,7 @@
 import Cookies from "js-cookie";
 import { useContext, useState, useCallback } from "react";
-import axios from "axios";
 import { popupContext } from "../../../../storage/ContextStorage";
+import userCalls from "../../../../lib/apiCalls/userCalls";
 
 const defaultFormData = {
   email: "",
@@ -9,28 +9,30 @@ const defaultFormData = {
 };
 
 const LoginUserPopup = () => {
-  const { setPopupState } = useContext(popupContext);
+  const { setOpen } = useContext(popupContext);
   const [formData, setFormData] = useState(defaultFormData);
   const [isValidData, setIsValidData] = useState(true);
 
   async function submitData(e) {
     e.preventDefault();
-    axios
-      .post("http://localhost:5266/user", formData)
+    userCalls
+      .loginUser(formData)
       .then((response) => {
-        Cookies.set("access_token", response.data.accessToken, {maxAge: 86400});
-        setPopupState({action: "closed", entity: null});
+        Cookies.set("access_token", `Bearer ${response.data.accessToken}`, {
+          expires: 1,
+        });
+        setOpen(false);
       })
       .catch((err) => {
-        if(err.response.status === 403){
-            setIsValidData(false);
+        if (err.response && err.response.status === 403) {
+          setIsValidData(false);
         }
       });
   }
 
   const handleInputChange = useCallback(
     (e) => {
-        setIsValidData(true);
+      setIsValidData(true);
       const { name, value } = e.target;
       setFormData({
         ...formData,
@@ -65,7 +67,11 @@ const LoginUserPopup = () => {
             />
           </div>
         </div>
-        {!isValidData && <label className="invalid-data-message">Wrong email or password</label>}
+        {!isValidData && (
+          <label className="invalid-data-message">
+            Wrong email or password
+          </label>
+        )}
         <button type="submit" onClick={submitData}>
           Login
         </button>

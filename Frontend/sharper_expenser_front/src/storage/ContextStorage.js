@@ -1,25 +1,22 @@
 import { createContext, useState } from "react";
 
 const popupContext = createContext({
-  popupState: {},
-  setPopupState: () => {},
-  chosenTransaction: {},
-  setChosenTransaction: () => {},
+  isOpen: {},
+  setOpen: () => {},
+  params: {},
+  togglePopup: () => {},
   currentGoal: {},
-  setCurrentGoal: () => {},
-  chosenGoal: {},
-  setChosenGoal: () => {}
+  setCurrentGoal: () => {}
 });
 
 const PopupProvider = ({ children }) => {
-  const [popupState, setPopupState] = useState({action: "closed", entity: null});
-  const [chosenTransaction, setChosenTransaction] = useState(null);
+  const [isOpen, setOpen] = useState(false);
+  const [params, togglePopup] = useState({});
   const [currentGoal, setCurrentGoal] = useState(null);
-  const [chosenGoal, setChosenGoal] = useState(null);
 
   return (
     <popupContext.Provider
-      value={{ popupState, setPopupState, chosenTransaction, setChosenTransaction, currentGoal, setCurrentGoal, chosenGoal, setChosenGoal }}
+      value={{ isOpen, setOpen, params, togglePopup, currentGoal, setCurrentGoal }}
     >
       {children}
     </popupContext.Provider>

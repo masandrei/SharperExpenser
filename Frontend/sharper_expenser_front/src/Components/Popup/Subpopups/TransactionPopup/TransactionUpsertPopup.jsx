@@ -1,9 +1,10 @@
 import { useContext, useState, useEffect, useCallback } from "react";
-import axios from "axios";
 import { popupContext } from "../../../../storage/ContextStorage";
 import CurrencyService from "../../../../lib/CurrencyService";
+import transactionCalls from "../../../../lib/apiCalls/transactionCalls";
 
 import "./TransactionPopup.css";
+import { POPUP_STATES } from "../../Popup";
 const defaultFormData = {
   id: 0,
   transactionDate: "",
@@ -14,20 +15,14 @@ const defaultFormData = {
 
 const TransactionUpsertPopup = () => {
   const [formData, setFormData] = useState(defaultFormData);
-  const {
-    popupState,
-    setPopupState,
-    currentGoal,
-    setCurrentGoal,
-    chosenTransaction,
-    setChosenTransaction,
-  } = useContext(popupContext);
+  const { params, togglePopup, setOpen, currentGoal } = useContext(popupContext);
+
   useEffect(() => {
     setFormData({
       ...defaultFormData,
-      ...chosenTransaction,
+      ...params.chosenTransaction,
     });
-  }, [chosenTransaction]);
+  }, [params.chosenTransaction]);
 
   async function submitData(e) {
     e.preventDefault();
@@ -40,56 +35,34 @@ const TransactionUpsertPopup = () => {
         currentGoal.currency
       );
       if (
-        chosenTransaction !== null &&
-        chosenTransaction.transactionDate !== formData.transactionDate
+        params.chosenTransaction !== null &&
+        params.chosenTransaction.transactionDate !== formData.transactionDate
       ) {
         oldExchangeRate = await CurrencyService.getExchangeRateRequest(
-          new Date(chosenTransaction.transactionDate),
-          chosenTransaction.currency,
+          new Date(params.chosenTransaction.transactionDate),
+          params.chosenTransaction.currency,
           currentGoal.currency
         );
       } else {
         oldExchangeRate = newExchangeRate;
       }
     }
-    if (chosenTransaction === null) {
-      axios
-        .post(
-          "http://localhost:5266/transaction",
-          { ...formData, exchangeRate: newExchangeRate },
-          {
-            headers: {
-              Authorization:
-                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI2NzU4MDA2LCJleHAiOjE3MjgwNTQwMDYsImlhdCI6MTcyNjc1ODAwNn0.9gxCKhgM1tucAm1eQr9ANMIOnM8ReXy-6rBqx_-vang",
-              "Content-Type": "application/json",
-            },
-          }
-        )
+    if (params.chosenTransaction === null) {
+      transactionCalls
+        .createTransaction({ ...formData, exchangeRate: newExchangeRate })
         .then((response) => {
-          setPopupState({action: "closed", entity: null});
-          setChosenTransaction(null);
+          togglePopup({});
+          setOpen(false);
         })
         .catch((err) => {
           console.error(err);
         });
     } else {
-      axios
-        .put(
-          "http://localhost:5266/transaction",
-          { ...formData, newExchangeRate, oldExchangeRate },
-          {
-            headers: {
-              Authorization:
-                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI2NzU4MDA2LCJleHAiOjE3MjgwNTQwMDYsImlhdCI6MTcyNjc1ODAwNn0.9gxCKhgM1tucAm1eQr9ANMIOnM8ReXy-6rBqx_-vang",
-              accept: "*/*",
-              "Content-Type": "application/json",
-            },
-          }
-        )
+      transactionCalls
+        .updateTransaction({ ...formData, newExchangeRate, oldExchangeRate })
         .then(() => {
-          console.log("transaction has been sent");
-          setPopupState({action: "closed", entity: null});
-          setChosenTransaction(null);
+          togglePopup({});
+          setOpen(false);
         })
         .catch((err) => console.log(err.response));
     }
@@ -133,8 +106,8 @@ const TransactionUpsertPopup = () => {
               onChange={handleInputChange}
               required
             />
-            {popupState === "update" ? (
-              chosenTransaction.currency
+            {params.action === POPUP_STATES.TRANSACTION.UPDATE ? (
+              params.chosenTransaction.currency
             ) : (
               <select
                 id="transaction-currency"
@@ -169,8 +142,8 @@ const TransactionUpsertPopup = () => {
           </button>
           <button
             onClick={() => {
-              setPopupState("closed");
-              setChosenTransaction(null);
+              togglePopup({});
+              setOpen(false);
             }}
           >
             Close

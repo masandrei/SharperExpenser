@@ -1,27 +1,21 @@
 import { useContext } from "react";
 import { popupContext } from "../../../../storage/ContextStorage";
-import axios from "axios";
 
-import "./GoalPopup.css"
+import "./GoalPopup.css";
+import goalCalls from "../../../../lib/apiCalls/goalCalls";
 
-const DeleteGoalPopup = () => {
-  const { popupState, setPopupState, chosenGoal, setChosenGoal } =
-    useContext(popupContext);
+const DeleteGoalPopup = async () => {
+  const { setOpen, params, togglePopup } = useContext(popupContext);
 
   const deleteGoal = () => {
-    axios
-      .delete("http://localhost:5266/goals", {
-        headers: {
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI2NzU4MDA2LCJleHAiOjE3MjgwNTQwMDYsImlhdCI6MTcyNjc1ODAwNn0.9gxCKhgM1tucAm1eQr9ANMIOnM8ReXy-6rBqx_-vang",
-        },
-        data: {
-          id: chosenGoal.id,
-          exchangeRate: 1,
-        },
+    goalCalls
+      .deleteGoal({
+        id: params.chosenGoal.id,
+        exchangeRate: 1,
       })
       .then((response) => {
-        setPopupState({action: "closed", entity: null});
+        togglePopup({});
+        setOpen(false);
       })
       .catch((err) => console.error(err));
   };
@@ -32,8 +26,8 @@ const DeleteGoalPopup = () => {
         <button onClick={deleteGoal}>Delete</button>
         <button
           onClick={() => {
-            setPopupState({action: "closed", entity: null});
-            setChosenGoal(null);
+            togglePopup({});
+            setOpen(false);
           }}
         >
           Cancel

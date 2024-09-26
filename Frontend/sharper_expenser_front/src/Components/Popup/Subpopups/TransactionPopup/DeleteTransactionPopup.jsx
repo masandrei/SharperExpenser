@@ -1,27 +1,24 @@
 import { useContext } from "react";
 import { popupContext } from "../../../../storage/ContextStorage";
-import axios from "axios";
+import transactionCalls from "../../../../lib/apiCalls/transactionCalls";
 
-import "./TransactionPopup.css"
+import "./TransactionPopup.css";
+import CurrencyService from "../../../../lib/CurrencyService";
 
 const DeleteTransactionPopup = () => {
-  const { popupState, setPopupState, chosenTransaction, setChosenTransaction } =
+  const { setOpen, currentGoal, params, togglePopup } =
     useContext(popupContext);
 
-  const deleteTransaction = () => {
-    axios
-      .delete("http://localhost:5266/transaction", {
-        headers: {
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI2NzU4MDA2LCJleHAiOjE3MjgwNTQwMDYsImlhdCI6MTcyNjc1ODAwNn0.9gxCKhgM1tucAm1eQr9ANMIOnM8ReXy-6rBqx_-vang",
-        },
-        data: {
-          transactionId: chosenTransaction.id,
-          exchangeRate: 1,
-        },
+  const deleteTransaction = async () => {
+    const exchangeRate = await CurrencyService.getExchangeRateRequest(params.chosenTransaction.transactionDate, params.chosenTransaction.currency, currentGoal.currency)
+    transactionCalls
+      .deleteTransaction({
+        transactionId: params.chosenTransaction.id,
+        exchangeRate
       })
       .then((response) => {
-        setPopupState({action: "closed", entity: null});
+        togglePopup({});
+        setOpen(false);
       })
       .catch((err) => console.error(err));
   };
@@ -32,8 +29,8 @@ const DeleteTransactionPopup = () => {
         <button onClick={deleteTransaction}>Delete</button>
         <button
           onClick={() => {
-            setPopupState({action: "closed", entity: null});
-            setChosenTransaction(null);
+            togglePopup({});
+            setOpen(false);
           }}
         >
           Cancel

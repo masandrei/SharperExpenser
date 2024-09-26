@@ -10,19 +10,30 @@ function Goals() {
   const [goalsList, setGoalsList] = useState([]);
   const [finishedGoalsList, setFinishedGoalsList] = useState([]);
   const [isFinishedSection, setIsFinishedSection] = useState(false);
-  const { currentGoal, setCurrentGoal, popupState, setPopupState, setChosenGoal } = useContext(popupContext);
+  const {
+    currentGoal,
+    setCurrentGoal,
+    popupState,
+    setPopupState,
+    setChosenGoal,
+  } = useContext(popupContext);
   const addGoal = () => {
-    if(goalsList.length === 5){
+    if (goalsList.length === 5) {
       return;
     }
-    setPopupState({action:"create", entity:"goal"});
-  }
+    setPopupState({ action: "create", entity: "goal" });
+  };
 
-  const openPopup = useCallback((event) => {
-    const [action, id, type] = event.target.id.split("-");
-    setChosenGoal(type === "finished" ? goalsList[id] : finishedGoalsList[id]);
-    setPopupState({action, entity:"goal"});
-  }, [goalsList, finishedGoalsList]);
+  const openPopup = useCallback(
+    (event) => {
+      const [action, id, type] = event.target.id.split("-");
+      setChosenGoal(
+        type === "finished" ? goalsList[id] : finishedGoalsList[id]
+      );
+      setPopupState({ action, entity: "goal" });
+    },
+    [goalsList, finishedGoalsList]
+  );
   const finishGoal = async (event) => {
     axios
       .put(
@@ -38,12 +49,7 @@ function Goals() {
                 )
               : 1,
         },
-        {
-          headers: {
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI2NzU4MDA2LCJleHAiOjE3MjgwNTQwMDYsImlhdCI6MTcyNjc1ODAwNn0.9gxCKhgM1tucAm1eQr9ANMIOnM8ReXy-6rBqx_-vang",
-          },
-        }
+        { withCredentials: true }
       )
       .then((response) => {
         const updatedGoals = [...goalsList];
@@ -52,15 +58,15 @@ function Goals() {
       })
       .catch((err) => console.error(err));
   };
-  const deleteGoal = useCallback(
-    async (event) => {
-      const listItemIndex = Number.parseInt(event.target.value);
-      const updatedList = isFinishedSection
-        ? [...finishedGoalsList]
-        : [...goalsList];
-    },
-    [goalsList]
-  );
+  // const deleteGoal = useCallback(
+  //   async (event) => {
+  //     const listItemIndex = Number.parseInt(event.target.value);
+  //     const updatedList = isFinishedSection
+  //       ? [...finishedGoalsList]
+  //       : [...goalsList];
+  //   },
+  //   [goalsList]
+  // );
   const increasePriority = useCallback(
     async (event) => {
       const listItemIndex = Number.parseInt(event.target.value);
@@ -84,12 +90,7 @@ function Goals() {
                   )
                 : 1,
           },
-          {
-            headers: {
-              Authorization:
-                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI2NzU4MDA2LCJleHAiOjE3MjgwNTQwMDYsImlhdCI6MTcyNjc1ODAwNn0.9gxCKhgM1tucAm1eQr9ANMIOnM8ReXy-6rBqx_-vang",
-            },
-          }
+          { withCredentials: true }
         )
         .then((response) => {
           [
@@ -124,12 +125,7 @@ function Goals() {
                   )
                 : 1,
           },
-          {
-            headers: {
-              Authorization:
-                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI2NzU4MDA2LCJleHAiOjE3MjgwNTQwMDYsImlhdCI6MTcyNjc1ODAwNn0.9gxCKhgM1tucAm1eQr9ANMIOnM8ReXy-6rBqx_-vang",
-            },
-          }
+          { withCredentials: true }
         )
         .then((response) => {
           [updatedGoals[listItemIndex + 1], updatedGoals[listItemIndex]] = [
@@ -145,12 +141,7 @@ function Goals() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5266/goals", {
-        headers: {
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI2NzU4MDA2LCJleHAiOjE3MjgwNTQwMDYsImlhdCI6MTcyNjc1ODAwNn0.9gxCKhgM1tucAm1eQr9ANMIOnM8ReXy-6rBqx_-vang",
-        },
-      })
+      .get("http://localhost:5266/goals", { withCredentials: true })
       .then((response) => {
         const newGoals = response.data.filter((goal) => !goal.isFinished);
         const newFinishedGoals = response.data.filter(
@@ -201,8 +192,19 @@ function Goals() {
                       )}
                     </div>
                   )}
-                  <label id={`delete-${index}-${isFinishedSection ? 'finished': ''}`} onClick={openPopup}>{"\u232B"}</label>
-                  {!isFinishedSection && <label id={`update-${index}`} onClick={openPopup}>{"\u270E"}</label>}
+                  <label
+                    id={`delete-${index}-${
+                      isFinishedSection ? "finished" : ""
+                    }`}
+                    onClick={openPopup}
+                  >
+                    {"\u232B"}
+                  </label>
+                  {!isFinishedSection && (
+                    <label id={`update-${index}`} onClick={openPopup}>
+                      {"\u270E"}
+                    </label>
+                  )}
                 </div>
               </div>
               <div className="progress-label">

@@ -65,10 +65,7 @@ function ExpensesOverview() {
     const currentDate = new Date();
     axios
       .get("http://localhost:5266/transaction/currencies", {
-        headers: {
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI2NzU4MDA2LCJleHAiOjE3MjgwNTQwMDYsImlhdCI6MTcyNjc1ODAwNn0.9gxCKhgM1tucAm1eQr9ANMIOnM8ReXy-6rBqx_-vang",
-        },
+        withCredentials: true,
         params: {
           DateFrom: `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-01`
         }
@@ -85,10 +82,7 @@ function ExpensesOverview() {
       .get(
         `http://localhost:5266/transaction/report?Currency=${chosenCurrency}&DateFrom=${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-01`,
         {
-          headers: {
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmJmIjoxNzI2NzU4MDA2LCJleHAiOjE3MjgwNTQwMDYsImlhdCI6MTcyNjc1ODAwNn0.9gxCKhgM1tucAm1eQr9ANMIOnM8ReXy-6rBqx_-vang",
-          },
+          withCredentials: true
         }
       )
       .then((response) => {
