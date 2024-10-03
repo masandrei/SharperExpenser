@@ -1,5 +1,5 @@
-This application is developed as a better version of expenser.
 Tech Stack:
--ASP.NET Core(C#)
--React.js
--PostgreSQL
+-Backend: ASP.NET Core(C#)
+-Frontend: React.js
+-Database: PostgreSQL
+-ORM: EF Core
